@@ -9,6 +9,4 @@ build:
 	make -C backend/ build
 
 run:
-	rm -rf backend/bin/ && mkdir backend/bin/
-	cp tarot-game/pkg/tarot_game.js tarot-game/pkg/tarot_game_bg.wasm backend/bin/
-	python3 -m http.server --directory backend/
+	make -C backend/ run

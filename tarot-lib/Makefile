@@ -2,4 +2,4 @@ help:
 	echo "Help"
 
 build:
-	echo "Build"
+	cargo build

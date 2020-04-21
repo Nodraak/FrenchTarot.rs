@@ -1,5 +1,7 @@
 use wasm_bindgen::prelude::*;
 
+use tarot_lib;
+
 mod js_api;
 use js_api::alert;
 
@@ -22,6 +24,8 @@ pub fn main() -> Result<(), JsValue> {
     body.append_child(&val)?;
 
     greet("Adrien");
+
+    tarot_lib::main();
 
     Ok(())
 }

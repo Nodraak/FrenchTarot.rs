@@ -1,0 +1,8 @@
+[package]
+name = "backend"
+version = "0.1.0"
+authors = ["Adrien Chardon <adrienchardon@mailoo.org>"]
+edition = "2018"
+
+[dependencies]
+tarot_lib = { path = "../tarot-lib" }
