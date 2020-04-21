@@ -1,6 +1,4 @@
-extern crate wasm_bindgen;
 use wasm_bindgen::prelude::*;
-use web_sys;
 
 mod js_api;
 use js_api::alert;

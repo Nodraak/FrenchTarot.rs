@@ -1,11 +1,11 @@
 <html>
   <head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type"/>
-    <script src='./bin/tarot_game.js'></script>
-    <script type=module>
+    <script type="module">
+      import init, { main } from './bin/tarot_game.js';
       async function run_tarot_game() {
-        await wasm_bindgen('./bin/tarot_game_bg.wasm');
-        wasm_bindgen.main();
+        await init();
+        main();
       }
       run_tarot_game();
     </script>
