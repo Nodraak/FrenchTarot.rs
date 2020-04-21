@@ -1,0 +1,3 @@
+
+// Enum
+// canPlay(table) -> bool
