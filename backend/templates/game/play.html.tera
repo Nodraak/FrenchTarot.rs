@@ -1,0 +1,16 @@
+{% extends "base" %}
+
+{% block head %}
+    <script type="module">
+        import init, { main } from '/static/bin/tarot_game.js';
+        async function run_tarot_game() {
+            await init();
+            main();
+        }
+        run_tarot_game();
+    </script>
+{% endblock head %}
+
+{% block body %}
+    game play
+{% endblock body %}

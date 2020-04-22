@@ -1,0 +1,5 @@
+{% extends "base" %}
+
+{% block body %}
+    game create
+{% endblock body %}

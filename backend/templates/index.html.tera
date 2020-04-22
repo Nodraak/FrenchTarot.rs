@@ -1,0 +1,9 @@
+{% extends "base" %}
+
+{% block body %}
+    index
+
+    * user
+    * game create
+    * see games
+{% endblock body %}
