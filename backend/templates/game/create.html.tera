@@ -1,5 +1,11 @@
 {% extends "base" %}
 
 {% block body %}
-    game create
+    <h1>game create</h1>
+    <form method="post">
+        <label for="number">Number of players:</label>
+        <input type="number" name="players">
+        <br/>
+        <input type="submit" value="Create game">
+    </form>
 {% endblock body %}

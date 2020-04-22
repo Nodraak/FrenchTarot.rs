@@ -1,9 +1,14 @@
 {% extends "base" %}
 
 {% block body %}
-    index
+    <h1>Hello {{ username }}</h1>
 
-    * user
-    * game create
-    * see games
+    <p>index
+
+    <ul>
+        <li><a href="/user">Change username</a></li>
+        <li><a href="/game/">See existing games</a></li>
+        <li><a href="/game/create">Start a game</a></li>
+    </ul>
+    </p>
 {% endblock body %}

@@ -1,5 +1,11 @@
 {% extends "base" %}
 
 {% block body %}
-    user
+    <h1>Update username</h1>
+    <form method="post">
+        <label for="usename">Username:</label>
+        <input type="text" name="username" value="{{ username }}">
+        <br/>
+        <input type="submit" value="Update username">
+    </form>
 {% endblock body %}
