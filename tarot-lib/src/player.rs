@@ -1,4 +1,3 @@
-
 // absolute
     // name: str
     // score
@@ -7,3 +6,7 @@
         // role: leader, follower, opponent
         // deck: vec<card>[]
         // heap: vec<card>[] -> cards won
+
+pub struct Player {
+    pub name: String,
+}
