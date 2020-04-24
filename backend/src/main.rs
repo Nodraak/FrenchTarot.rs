@@ -16,12 +16,39 @@ use db::utils;
 mod routes;
 use routes::{index, user, game};
 
+use tarot_lib::game::Game as GameObj;
+use tarot_lib::player::Player as PlayerObj;
+
+use db::accessors::game_create;
 
 fn main() {
 
     tarot_lib::main();
 
     let connection = utils::connect();
+
+    game_create(&connection, GameObj {
+        pk: 42,
+        max_players_count: 43,
+        creator: None,
+        players: None,
+
+    });
+    game_create(&connection, GameObj {
+        pk: 42,
+        max_players_count: 43,
+        creator: None,
+        players: None,
+
+    });
+    game_create(&connection, GameObj {
+        pk: 42,
+        max_players_count: 43,
+        creator: None,
+        players: None,
+
+    });
+
     let results = games
         .limit(5)
         .load::<Game>(&connection)

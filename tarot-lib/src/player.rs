@@ -8,5 +8,6 @@
         // heap: vec<card>[] -> cards won
 
 pub struct Player {
-    pub name: String,
+    pub pk: i32,
+    pub username: String,
 }

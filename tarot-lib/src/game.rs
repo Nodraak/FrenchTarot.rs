@@ -8,12 +8,11 @@
     // talking
         // best_talk: <player, what>
 
-use uuid::Uuid;
-
-use crate::player::Player;
+use super::player::Player;
 
 pub struct Game<'a> {
-    pub id: Uuid,
-    pub creator: &'a Player,
-    pub players: [&'a Player; 5],
+    pub pk: i32,
+    pub max_players_count: i32,
+    pub creator: Option<&'a Player>,
+    pub players: Option<[&'a Player; 5]>,
 }

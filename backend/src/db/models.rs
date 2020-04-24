@@ -1,33 +1,42 @@
-use diesel::sqlite::SqliteConnection;
+use super::schema::{users, games, game_players};
 
-use super::schema::games;
 
-use crate::diesel::RunQueryDsl;
+#[derive(Queryable)]
+pub struct User {
+    pub pk: i32,
+    pub username: String,
+}
 
-//use tarot_lib::player::Player;
+#[derive(Insertable)]
+#[table_name="users"]
+pub struct UserNew {
+    pub username: String,
+}
 
 #[derive(Queryable)]
 pub struct Game {
-//pub struct Game<'a> {
     pub pk: i32,
-    pub players: i32,
-//    pub creator: &'a Player,
-//    pub players: [&'a Player; 5],
+    pub max_players_count: i32,
+    pub creator_pk: Option<i32>,  // User.pk
 }
 
 #[derive(Insertable)]
 #[table_name="games"]
 pub struct GameNew {
-    pub players: i32,
+    pub max_players_count: i32,
+    pub creator_pk: Option<i32>,  // User.pk
 }
 
-pub fn game_create(conn: &SqliteConnection, players: i32) {
-    let g = GameNew {
-        players: players,
-    };
+#[derive(Queryable)]
+pub struct GamePlayers {
+    pub pk: i32,
+    pub user_pk: Option<i32>,  // User.pk
+    pub game_pk: Option<i32>,  // Game.pk
+}
 
-    diesel::insert_into(games::table)
-        .values(&g)
-        .execute(conn)
-        .expect("Error saving new post");
+#[derive(Insertable)]
+#[table_name="game_players"]
+pub struct GamePlayersNew {
+    pub user_pk: Option<i32>,  // User.pk
+    pub game_pk: Option<i32>,  // Game.pk
 }
