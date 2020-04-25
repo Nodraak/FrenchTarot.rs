@@ -1,4 +1,4 @@
-# tarot.rs
+# tarot.rs - Work In Progress, dont expect too much
 
 French tarot game built with Rust and WASM.
 
