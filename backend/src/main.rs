@@ -3,6 +3,8 @@
 #[macro_use] extern crate diesel;
 #[macro_use] extern crate rocket;
 
+use ::uuid::Uuid;
+
 use diesel::prelude::*;
 use rocket_contrib::serve::StaticFiles;
 use rocket_contrib::templates::Template;
@@ -10,6 +12,7 @@ use rocket_contrib::templates::Template;
 //use tarot_lib;
 
 mod db;
+use db::accessors::game_create;
 use db::models::*;
 use db::schema::games::dsl::*;
 use db::utils;
@@ -19,7 +22,7 @@ use routes::{index, user, game};
 use tarot_lib::game::Game as GameObj;
 use tarot_lib::player::Player as PlayerObj;
 
-use db::accessors::game_create;
+
 
 fn main() {
 
@@ -28,35 +31,20 @@ fn main() {
     let connection = utils::connect();
 
     game_create(&connection, GameObj {
-        pk: 42,
-        max_players_count: 43,
+        uuid: Uuid::new_v4(),
+        max_players_count: 5,
         creator: None,
-        players: None,
-
-    });
-    game_create(&connection, GameObj {
-        pk: 42,
-        max_players_count: 43,
-        creator: None,
-        players: None,
-
-    });
-    game_create(&connection, GameObj {
-        pk: 42,
-        max_players_count: 43,
-        creator: None,
-        players: None,
-
+        players: vec![],
     });
 
     let results = games
-        .limit(5)
+        .limit(20)
         .load::<Game>(&connection)
         .expect("Error loading games");
 
     println!("Displaying {} games", results.len());
     for post in results {
-        println!("{}", post.pk);
+        println!("* {:?}", post.uuid);
     }
 
 

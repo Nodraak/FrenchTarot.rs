@@ -1,29 +1,29 @@
 table! {
-    game_players (pk) {
-        pk -> Integer,
-        user_pk -> Nullable<Integer>,
-        game_pk -> Nullable<Integer>,
+    game_players (uuid) {
+        uuid -> Text,
+        user_uuid -> Nullable<Text>,
+        game_uuid -> Nullable<Text>,
     }
 }
 
 table! {
-    games (pk) {
-        pk -> Integer,
+    games (uuid) {
+        uuid -> Text,
         max_players_count -> Integer,
-        creator_pk -> Nullable<Integer>,
+        creator_uuid -> Nullable<Text>,
     }
 }
 
 table! {
-    users (pk) {
-        pk -> Integer,
+    users (uuid) {
+        uuid -> Text,
         username -> Text,
     }
 }
 
-joinable!(game_players -> games (game_pk));
-joinable!(game_players -> users (user_pk));
-joinable!(games -> users (creator_pk));
+joinable!(game_players -> games (game_uuid));
+joinable!(game_players -> users (user_uuid));
+joinable!(games -> users (creator_uuid));
 
 allow_tables_to_appear_in_same_query!(
     game_players,

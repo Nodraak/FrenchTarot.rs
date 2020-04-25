@@ -1,42 +1,29 @@
 use super::schema::{users, games, game_players};
 
+type Uuid = String;  // Uuid not supported for diesel sqlite
 
 #[derive(Queryable)]
-pub struct User {
-    pub pk: i32,
-    pub username: String,
-}
-
 #[derive(Insertable)]
 #[table_name="users"]
-pub struct UserNew {
+pub struct User {
+    pub uuid: Uuid,
     pub username: String,
 }
 
 #[derive(Queryable)]
-pub struct Game {
-    pub pk: i32,
-    pub max_players_count: i32,
-    pub creator_pk: Option<i32>,  // User.pk
-}
-
 #[derive(Insertable)]
 #[table_name="games"]
-pub struct GameNew {
+pub struct Game {
+    pub uuid: Uuid,
     pub max_players_count: i32,
-    pub creator_pk: Option<i32>,  // User.pk
+    pub creator_uuid: Option<Uuid>,  // User.Uuid
 }
 
 #[derive(Queryable)]
-pub struct GamePlayers {
-    pub pk: i32,
-    pub user_pk: Option<i32>,  // User.pk
-    pub game_pk: Option<i32>,  // Game.pk
-}
-
 #[derive(Insertable)]
 #[table_name="game_players"]
-pub struct GamePlayersNew {
-    pub user_pk: Option<i32>,  // User.pk
-    pub game_pk: Option<i32>,  // Game.pk
+pub struct GamePlayers {
+    pub uuid: Uuid,
+    pub user_uuid: Option<Uuid>,  // User.uuid
+    pub game_uuid: Option<Uuid>,  // Game.uuid
 }

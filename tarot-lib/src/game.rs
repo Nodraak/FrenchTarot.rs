@@ -8,11 +8,13 @@
     // talking
         // best_talk: <player, what>
 
+use uuid::Uuid;
+
 use super::player::Player;
 
 pub struct Game<'a> {
-    pub pk: i32,
+    pub uuid: Uuid,
     pub max_players_count: i32,
     pub creator: Option<&'a Player>,
-    pub players: Option<[&'a Player; 5]>,
+    pub players: Vec<&'a Player>,
 }

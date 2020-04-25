@@ -7,7 +7,9 @@
         // deck: vec<card>[]
         // heap: vec<card>[] -> cards won
 
+use uuid::Uuid;
+
 pub struct Player {
-    pub pk: i32,
+    pub uuid: Uuid,
     pub username: String,
 }
