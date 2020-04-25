@@ -1,35 +1,38 @@
 use uuid::Uuid;
+use web_sys;
 use wasm_bindgen::prelude::*;
 
-use tarot_lib;
-
 mod js_api;
-use js_api::alert;
+mod utils;
+mod view;
 
-fn greet(name: &str) {
-    alert(&format!("Hello, {}!", name));
+
+fn wrapped_main(document: &web_sys::Document, game_uuid: Uuid) -> utils::Result<()> {
+    view::init(&document, game_uuid)?;
+
+    Ok(())
 }
 
+
 #[wasm_bindgen]
-pub fn main(game_id_: String) -> Result<(), JsValue> {
-    // Use `web_sys`'s global `window` function to get a handle on the global
-    // window object.
-    let window = web_sys::window().expect("no global `window` exists");
-    let document = window.document().expect("should have a document on window");
-    let body = document.body().expect("document should have a body");
+pub fn main(game_uuid_: String) -> utils::Result<()> {
+    let game_uuid = Uuid::parse_str(&game_uuid_).unwrap();
 
+    let document = web_sys::window().unwrap().document().unwrap();
+    document.query_selector("#main > p").unwrap().unwrap().set_inner_html("Starting game... (2/3)");
 
-    let game_id = Uuid::parse_str(&game_id_).unwrap();
+    let r = wrapped_main(&document, game_uuid);
 
-    // Manufacture the element we're gonna append
-    let val = document.create_element("p")?;
-    val.set_inner_html("Hello from Rust!");
-
-    body.append_child(&val)?;
-
-    greet(&game_id_);
-
-    tarot_lib::main();
+    match r {
+        Ok(v) => {},
+        Err(e) => {
+            let main = document.get_element_by_id("main").unwrap();
+            main.set_inner_html(r#"
+                <p>Error</p>
+            "#);
+            js_api::alert("Error");
+        },
+    };
 
     Ok(())
 }

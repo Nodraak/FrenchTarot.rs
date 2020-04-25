@@ -1,0 +1,22 @@
+body {
+    margin: 0;
+}
+
+#main {
+    margin: auto;
+}
+
+#board, #info {
+    display: inline-block;
+    height: 600px;
+}
+
+#board {
+    width: 75%;
+    background-color: rgb(128, 192, 128);
+}
+
+#info {
+    width: 25%;
+    background-color: rgb(192, 192, 192);
+}
