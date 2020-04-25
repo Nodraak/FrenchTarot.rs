@@ -5,7 +5,9 @@
         import init, { main } from '/static/bin/tarot_game.js';
         async function run_tarot_game() {
             await init();
-            main();
+            main(
+                "{{ game_id }}",
+            );
         }
         run_tarot_game();
     </script>

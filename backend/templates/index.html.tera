@@ -16,7 +16,7 @@
 
     <ul>
         {% for g in games %}
-            <li>{{ g.uuid }}</li>
+            <li><a href="/game/play/{{ g.uuid }}">{{ g.uuid }}</a></li>
         {% endfor %}
     </ul>
 

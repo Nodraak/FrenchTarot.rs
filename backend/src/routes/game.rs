@@ -58,7 +58,8 @@ pub fn create_post(game: Form<GameCreate>, user: User) -> Result<Redirect, Strin
 
 #[get("/play/<id>")]
 pub fn play(id: String, user: User) -> Template {
-    let context = HashMap::<&str, &str>::new();
+    let mut context = HashMap::<&str, &str>::new();
+    context.insert("game_id", &id);
     Template::render("game/play", &context)
 }
 

@@ -1,3 +1,4 @@
+use uuid::Uuid;
 use wasm_bindgen::prelude::*;
 
 use tarot_lib;
@@ -10,12 +11,15 @@ fn greet(name: &str) {
 }
 
 #[wasm_bindgen]
-pub fn main() -> Result<(), JsValue> {
+pub fn main(game_id_: String) -> Result<(), JsValue> {
     // Use `web_sys`'s global `window` function to get a handle on the global
     // window object.
     let window = web_sys::window().expect("no global `window` exists");
     let document = window.document().expect("should have a document on window");
     let body = document.body().expect("document should have a body");
+
+
+    let game_id = Uuid::parse_str(&game_id_).unwrap();
 
     // Manufacture the element we're gonna append
     let val = document.create_element("p")?;
@@ -23,7 +27,7 @@ pub fn main() -> Result<(), JsValue> {
 
     body.append_child(&val)?;
 
-    greet("Adrien");
+    greet(&game_id_);
 
     tarot_lib::main();
 
