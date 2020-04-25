@@ -2,6 +2,7 @@
 
 #[macro_use] extern crate diesel;
 #[macro_use] extern crate rocket;
+#[macro_use] extern crate rocket_contrib;
 
 use ::uuid::Uuid;
 
@@ -12,16 +13,15 @@ use rocket_contrib::templates::Template;
 //use tarot_lib;
 
 mod db;
-use db::accessors::game_create;
+use db::accessors;
 use db::models::*;
 use db::schema::games::dsl::*;
 use db::utils;
+
 mod routes;
-use routes::{index, user, game};
 
 use tarot_lib::game::Game as GameObj;
 use tarot_lib::player::Player as PlayerObj;
-
 
 
 fn main() {
@@ -30,7 +30,7 @@ fn main() {
 
     let connection = utils::connect();
 
-    game_create(&connection, GameObj {
+    accessors::game::create(&connection, GameObj {
         uuid: Uuid::new_v4(),
         max_players_count: 5,
         creator: None,
@@ -50,10 +50,11 @@ fn main() {
 
     rocket::ignite()
         // routes
-        .mount("/", routes![index::index])
-        .mount("/user", routes![user::get, user::post])
-        .mount("/game", routes![game::index, game::create_get, game::create_post, game::play])
-        // templates and static
+        .mount("/", routes![routes::index::index])
+        .mount("/user", routes![routes::user::get, routes::user::post])
+        .mount("/game", routes![routes::game::index, routes::game::create_get, routes::game::create_post, routes::game::play])
+        // db, templates and static files
+        .attach(utils::DbConn::fairing())
         .attach(Template::fairing())
         .mount("/static", StaticFiles::from("./static"))
         // launch!

@@ -5,7 +5,7 @@ use rocket::request::{Form, FromFormValue};
 use rocket::response::Redirect;
 use rocket_contrib::templates::Template;
 
-use crate::user::User;
+use crate::routes::user::User;
 
 
 #[derive(FromForm)]

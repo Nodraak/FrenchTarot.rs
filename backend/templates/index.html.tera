@@ -11,4 +11,13 @@
         <li><a href="/game/create">Start a game</a></li>
     </ul>
     </p>
+
+    <hr/>
+
+    <ul>
+        {% for g in games %}
+            <li>{{ g.uuid }}</li>
+        {% endfor %}
+    </ul>
+
 {% endblock body %}

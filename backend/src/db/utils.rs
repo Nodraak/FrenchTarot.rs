@@ -2,6 +2,11 @@ use std::env;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
 use dotenv::dotenv;
+use rocket_contrib::databases;
+
+#[database("sqlite_logs")]
+pub struct DbConn(databases::diesel::SqliteConnection);
+
 
 pub fn connect() -> SqliteConnection {
     dotenv().ok();
