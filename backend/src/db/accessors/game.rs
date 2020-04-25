@@ -13,8 +13,6 @@ use crate::db::schema::{users, games, game_players};
 
 
 pub fn create(conn: &SqliteConnection, game_obj: GameObj) {
-    let game_uuid = Uuid::new_v4();
-
     let creator_uuid: Option<String> = match game_obj.creator {
         None => { None },
         Some(c) => { Some(c.uuid.to_string()) },
@@ -24,7 +22,7 @@ pub fn create(conn: &SqliteConnection, game_obj: GameObj) {
 
     diesel::insert_into(games::table)
         .values(GameData {
-            uuid: game_uuid.to_string(),
+            uuid: game_obj.uuid.to_string(),
             max_players_count: game_obj.max_players_count,
             creator_uuid: creator_uuid,
         })
@@ -38,7 +36,7 @@ pub fn create(conn: &SqliteConnection, game_obj: GameObj) {
             .values(GamePlayersData {
                 uuid: Uuid::new_v4().to_string(),
                 user_uuid: Some(p.uuid.to_string()),
-                game_uuid: Some(game_uuid.to_string()),
+                game_uuid: Some(game_obj.uuid.to_string()),
             })
             .execute(conn)
             .expect("Error saving new game player");
@@ -49,7 +47,7 @@ pub fn list(conn: &SqliteConnection) -> Vec<GameObj> {
     use crate::db::schema::games::dsl::games;
 
     // TODO paginate
-    let page_size = 20;
+    let page_size = 100;
     let page_id = 0;
 
     let results = games

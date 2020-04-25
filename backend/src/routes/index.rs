@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use rocket_contrib::templates::Template;
 
-use crate::accessors::game;
+use crate::db::accessors::game;
 use crate::db::utils::DbConn;
 use crate::routes::user::User;
 

@@ -1,10 +1,15 @@
 use std::collections::HashMap;
+use uuid::Uuid;
 
 use rocket::http::RawStr;
 use rocket::request::{Form, FromFormValue};
 use rocket::response::Redirect;
 use rocket_contrib::templates::Template;
 
+use tarot_lib::game::Game as GameObj;
+
+use crate::db::accessors;
+use crate::db::utils::DbConn;
 use crate::routes::user::User;
 
 
@@ -45,19 +50,29 @@ pub fn create_get(user: User) -> Template {
 }
 
 #[post("/create", data = "<game>")]
-pub fn create_post(game: Form<GameCreate>, user: User) -> Result<Redirect, String> {
+pub fn create_post(game: Form<GameCreate>, user: User, conn: DbConn) -> Result<Redirect, String> {
     let context = HashMap::<&str, &str>::new();
 
-    let game_id = "gameid42";  // TODO generate game id
+    let game_uuid = Uuid::new_v4();
 
-    // TODO update db with game.players and game_id
+    // TODO update db with game.players
+
+    accessors::game::create(&conn, GameObj {
+        uuid: game_uuid,
+        max_players_count: 5,
+        creator: None,
+        players: vec![],
+    });
+
     // TODO create the game state machine
 
-    Ok(Redirect::to(format!("/game/play/{}", game_id)))
+    Ok(Redirect::to(format!("/game/play/{}", game_uuid.to_string())))
 }
 
 #[get("/play/<id>")]
 pub fn play(id: String, user: User) -> Template {
+    // TODO check join as player or watcher
+
     let mut context = HashMap::<&str, &str>::new();
     context.insert("game_id", &id);
     Template::render("game/play", &context)
