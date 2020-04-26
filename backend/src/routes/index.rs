@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use rocket_contrib::templates::Template;
 
 use crate::db::accessors::game;

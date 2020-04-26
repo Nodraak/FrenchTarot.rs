@@ -21,7 +21,7 @@ fn on_open(ws: &WebSocket, username: String, v: JsValue) {
     console_log!("on_open(): {:?}", v);
 
     let event = state_machine::Event::WsConnect(events_data::WsConnectData {
-        username: "todo_username_from_client".to_string(),
+        username: username,
     });
     let ret = ws.send_with_str(&serde_json::to_string(&event).unwrap());
 

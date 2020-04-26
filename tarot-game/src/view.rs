@@ -1,6 +1,4 @@
 use uuid::Uuid;
-use wasm_bindgen::JsCast;
-use wasm_bindgen::prelude::*;
 use web_sys;
 
 use crate::utils;

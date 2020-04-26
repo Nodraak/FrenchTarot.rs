@@ -5,12 +5,10 @@
 #[macro_use] extern crate rocket_contrib;
 
 use std::thread;
-use diesel::prelude::*;
 use rocket_contrib::serve::StaticFiles;
 use rocket_contrib::templates::Template;
 
 mod db;
-use db::models::*;
 use db::utils;
 
 mod routes;

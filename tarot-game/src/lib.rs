@@ -24,21 +24,23 @@ pub fn main(game_uuid_: String, username: String) -> utils::Result<()> {
 
     let r = wrapped_main(&document, game_uuid);
 
+    if let Err(e) = r {
+        let main = document.get_element_by_id("main").unwrap();
+        main.set_inner_html(r#"
+            <p>Error 1</p>
+        "#);
+    }
+
     let ws_host = "127.0.0.1:8001";
     let ws_path = format!("/game/play/{}", game_uuid.to_string());
 
-    websocket::main(format!("ws://{}{}", ws_host, ws_path), username);
-
-    match r {
-        Ok(v) => {},
-        Err(e) => {
-            let main = document.get_element_by_id("main").unwrap();
-            main.set_inner_html(r#"
-                <p>Error</p>
-            "#);
-            js_api::alert("Error");
-        },
-    };
+    let r = websocket::main(format!("ws://{}{}", ws_host, ws_path), username);
+    if let Err(e) = r {
+        let main = document.get_element_by_id("main").unwrap();
+        main.set_inner_html(r#"
+            <p>Error 2</p>
+        "#);
+    }
 
     Ok(())
 }

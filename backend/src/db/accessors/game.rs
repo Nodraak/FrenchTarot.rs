@@ -4,12 +4,12 @@ use diesel::prelude::*;
 use uuid::Uuid;
 
 use tarot_lib::game::Game as GameObj;
-use tarot_lib::player::Player as PlayerObj;
+//use tarot_lib::player::Player as PlayerObj;
 
 use crate::db::models::Game as GameData;
 use crate::db::models::GamePlayers as GamePlayersData;
-use crate::db::models::User as UserData;
-use crate::db::schema::{users, games, game_players};
+//use crate::db::models::User as UserData;
+use crate::db::schema::{games, game_players};
 
 
 pub fn create(conn: &SqliteConnection, game_obj: GameObj) {

@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
-use std::thread;
 use uuid::Uuid;
 
 use serde_json;
