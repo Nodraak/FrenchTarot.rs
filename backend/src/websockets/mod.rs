@@ -4,7 +4,7 @@ use std::thread;
 use uuid::Uuid;
 
 use serde_json;
-use ws::{listen, Handler, Sender, Result, Message, Handshake, CloseCode, Error};
+use ws::{listen, Handler, Sender, Result, Message, Handshake, CloseCode, Error, ErrorKind};
 
 use tarot_lib::game::{events_data, state_machine};
 
@@ -26,8 +26,17 @@ impl Handler for Server {
     fn on_open(&mut self, handshake: Handshake) -> Result<()> {
         println!("on_open(): {:?}", handshake);
 
-        let game_uuid = Uuid::parse_str("9495832a-b546-46b8-a085-86c330e3e121").unwrap();
-        // TODO from handshake.request.path
+        let path = handshake.request.resource();
+        if (path.starts_with("/game/play/") == false) || (path.len() != 11+36) {
+            return Err(Error::new(
+                ErrorKind::Internal,
+                format!("error path"),
+            ));
+        }
+
+        let game_uuid = Uuid::parse_str(path.get(11..47).unwrap()).unwrap();
+
+        println!("==>> cookies {:?}", handshake.request.header("cookie"));
 
         let player_uuid = Uuid::new_v4();
         // TODO from cookie
@@ -67,6 +76,8 @@ impl Handler for Server {
 
     fn on_close(&mut self, code: CloseCode, reason: &str) {
         println!("on_close(): {:?} - {:?}", code, reason);
+
+        // TODO close socket and remove from game data
 
         /*
         match code {
