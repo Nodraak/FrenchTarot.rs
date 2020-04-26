@@ -1,5 +1,5 @@
 [package]
-name = "backend"
+name = "tarot-server"
 version = "0.1.0"
 authors = ["Adrien Chardon <adrienchardon@mailoo.org>"]
 edition = "2018"

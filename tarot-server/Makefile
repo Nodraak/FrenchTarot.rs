@@ -2,10 +2,10 @@ help:
 	echo "Help"
 
 build:
-	make -C ../tarot-game build
+	make -C ../tarot-client build
 	rm -rf static/bin/ \
 		&& mkdir static/bin/ \
-		&& cp ../tarot-game/pkg/tarot_game.js ../tarot-game/pkg/tarot_game_bg.wasm static/bin/
+		&& cp ../tarot-client/pkg/tarot_client.js ../tarot-client/pkg/tarot_client_bg.wasm static/bin/
 	cargo build
 
 run:

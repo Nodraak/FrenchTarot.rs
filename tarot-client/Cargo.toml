@@ -1,5 +1,5 @@
 [package]
-name = "tarot-game"
+name = "tarot-client"
 version = "0.1.0"
 authors = ["Adrien Chardon <adrienchardon@mailoo.org>"]
 edition = "2018"

@@ -5,8 +5,8 @@ all: build run
 
 build:
 	make -C tarot-lib/ build
-	make -C tarot-game/ build
-	make -C backend/ build
+	make -C tarot-client/ build
+	make -C tarot-server/ build
 
 run:
-	make -C backend/ run
+	make -C tarot-server/ run
