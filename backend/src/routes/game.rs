@@ -73,12 +73,8 @@ pub fn create_post(game: Form<GameCreate>, user: User, conn: DbConn) -> Result<R
 pub fn play(id: String, user: User) -> Template {
     // TODO check join as player or watcher
 
-    let mut context = HashMap::<&str, &str>::new();
-    context.insert("game_id", &id);
+    let mut context = HashMap::<&str, String>::new();
+    context.insert("game_id", id);
+    context.insert("username", user.username.clone());
     Template::render("game/play", &context)
 }
-
-// #[post("/api", data = "<data>")]
-// pub fn api() {
-//
-// }

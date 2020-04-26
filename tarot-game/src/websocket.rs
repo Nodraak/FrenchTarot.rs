@@ -1,6 +1,9 @@
+use serde_json;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
+
+use tarot_lib::game::{events_data, state_machine};
 
 
 macro_rules! console_log {
@@ -14,16 +17,21 @@ extern "C" {
     fn log(s: &str);
 }
 
-fn on_open(ws: &WebSocket, v: JsValue) {
-    console_log!("ws opened {:?}", v);
-    match ws.send_with_str("ping") {
-        Ok(ret) => console_log!("message successfully sent {:?}", ret),
-        Err(err) => console_log!("error sending message: {:?}", err),
+fn on_open(ws: &WebSocket, username: String, v: JsValue) {
+    console_log!("on_open(): {:?}", v);
+
+    let event = state_machine::Event::WsConnect(events_data::WsConnectData {
+        username: "todo_username_from_client".to_string(),
+    });
+    let ret = ws.send_with_str(&serde_json::to_string(&event).unwrap());
+
+    if let Err(err) = ret {
+        console_log!("error sending message: {:?}", err);
     }
 }
 
 fn on_error(error: ErrorEvent) {
-    console_log!("error event: {:?}", error);
+    console_log!("on_error(): {:?}", error);
 }
 
 fn on_message(msg: MessageEvent) {
@@ -31,15 +39,17 @@ fn on_message(msg: MessageEvent) {
         .data()
         .as_string()
         .expect("Can't convert received data to a string");
-    console_log!("message event, received data: {:?}", data);
+    let deserialized: state_machine::Event = serde_json::from_str(&data).unwrap();
+
+    console_log!("on_message(): {:?}", deserialized);
 }
 
 
-pub fn main(addr: &str) -> Result<(), JsValue> {
-    let ws = WebSocket::new(addr)?;
+pub fn main(addr: String, username: String) -> Result<(), JsValue> {
+    let ws = WebSocket::new(&addr)?;
 
     let on_open_ws = ws.clone();
-    let c = Closure::wrap(Box::new(move |v| { on_open(&on_open_ws, v); }) as Box<dyn FnMut(JsValue)>);
+    let c = Closure::wrap(Box::new(move |v| { on_open(&on_open_ws, username.clone(), v); }) as Box<dyn FnMut(JsValue)>);
     ws.set_onopen(Some(c.as_ref().unchecked_ref()));
     c.forget();
 

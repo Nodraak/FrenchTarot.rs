@@ -16,7 +16,7 @@ fn wrapped_main(document: &web_sys::Document, game_uuid: Uuid) -> utils::Result<
 
 
 #[wasm_bindgen]
-pub fn main(game_uuid_: String) -> utils::Result<()> {
+pub fn main(game_uuid_: String, username: String) -> utils::Result<()> {
     let game_uuid = Uuid::parse_str(&game_uuid_).unwrap();
 
     let document = web_sys::window().unwrap().document().unwrap();
@@ -24,7 +24,10 @@ pub fn main(game_uuid_: String) -> utils::Result<()> {
 
     let r = wrapped_main(&document, game_uuid);
 
-    websocket::main("ws://127.0.0.1:8001");
+    let ws_host = "127.0.0.1:8001";
+    let ws_path = format!("/game/play/{}", game_uuid.to_string());
+
+    websocket::main(format!("ws://{}{}", ws_host, ws_path), username);
 
     match r {
         Ok(v) => {},

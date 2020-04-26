@@ -11,13 +11,18 @@
 use serde::ser::{Serialize, Serializer, SerializeStruct};
 use uuid::Uuid;
 
-use super::player::Player;
+use crate::player::Player;
+
+pub mod events_data;
+pub mod state_machine;
 
 
 pub struct Game<'a> {
     pub uuid: Uuid,
     pub max_players_count: i32,
     pub creator: Option<&'a Player>,
+//    pub phase: GamePhase,
+
     pub players: Vec<&'a Player>,
 }
 

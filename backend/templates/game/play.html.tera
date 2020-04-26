@@ -8,6 +8,7 @@
             await init();
             main(
                 "{{ game_id }}",
+                "{{ username }}",
             );
         }
         run_tarot_game();
