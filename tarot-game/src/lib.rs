@@ -5,6 +5,7 @@ use wasm_bindgen::prelude::*;
 mod js_api;
 mod utils;
 mod view;
+mod websocket;
 
 
 fn wrapped_main(document: &web_sys::Document, game_uuid: Uuid) -> utils::Result<()> {
@@ -22,6 +23,8 @@ pub fn main(game_uuid_: String) -> utils::Result<()> {
     document.query_selector("#main > p").unwrap().unwrap().set_inner_html("Starting game... (2/3)");
 
     let r = wrapped_main(&document, game_uuid);
+
+    websocket::main("ws://127.0.0.1:8001");
 
     match r {
         Ok(v) => {},

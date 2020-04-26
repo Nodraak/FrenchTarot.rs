@@ -4,6 +4,7 @@
 #[macro_use] extern crate rocket;
 #[macro_use] extern crate rocket_contrib;
 
+use std::thread;
 use diesel::prelude::*;
 use rocket_contrib::serve::StaticFiles;
 use rocket_contrib::templates::Template;
@@ -13,9 +14,12 @@ use db::models::*;
 use db::utils;
 
 mod routes;
+mod websockets;
 
 
 fn main() {
+    thread::spawn(|| {websockets::main("127.0.0.1:8001")});
+
     rocket::ignite()
         // routes
         .mount("/", routes![routes::index::index])

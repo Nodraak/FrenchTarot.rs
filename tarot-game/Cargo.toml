@@ -27,4 +27,7 @@ features = [
   'Node',
   'Text',
   'Window',
+  'ErrorEvent',
+  'MessageEvent',
+  'WebSocket',
 ]
