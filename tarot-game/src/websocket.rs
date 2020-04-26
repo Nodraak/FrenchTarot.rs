@@ -42,6 +42,23 @@ fn on_message(msg: MessageEvent) {
     let deserialized: state_machine::Event = serde_json::from_str(&data).unwrap();
 
     console_log!("on_message(): {:?}", deserialized);
+
+    match deserialized {
+        state_machine::Event::WsConnect(data) => {
+            console_log!("on_message(): {:?}", data.username);
+
+            let document = web_sys::window().unwrap().document().unwrap();
+            let info = document.get_element_by_id("info").unwrap();
+            info.set_inner_html(&format!(r#"
+                <p>
+                    {} connected!
+                </p>
+            "#, data.username));
+        }
+        _ => {
+            console_log!("on_message(): Not handled (yet) {:?}", deserialized);
+        }
+    }
 }
 
 
