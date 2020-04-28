@@ -3,7 +3,7 @@ use diesel::RunQueryDsl;
 use diesel::prelude::*;
 use uuid::Uuid;
 
-use tarot_lib::game::Game as GameObj;
+use tarot_lib::game::game::Game as GameObj;
 //use tarot_lib::player::Player as PlayerObj;
 
 use crate::db::models::Game as GameData;

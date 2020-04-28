@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
 
-use tarot_lib::game::{events_data, state_machine};
+use tarot_lib::game::{events, state_machine};
 
 
 macro_rules! console_log {
@@ -20,7 +20,7 @@ extern "C" {
 fn on_open(ws: &WebSocket, username: String, v: JsValue) {
     console_log!("on_open(): {:?}", v);
 
-    let event = state_machine::Event::WsConnect(events_data::WsConnectData {
+    let event = state_machine::Event::WsConnect(events::data::WsConnectData {
         username: username,
     });
     let ret = ws.send_with_str(&serde_json::to_string(&event).unwrap());

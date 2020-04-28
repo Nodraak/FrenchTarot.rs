@@ -6,7 +6,7 @@ use rocket::request::{Form, FromFormValue};
 use rocket::response::Redirect;
 use rocket_contrib::templates::Template;
 
-use tarot_lib::game::Game as GameObj;
+use tarot_lib::game::game::Game as GameObj;
 
 use crate::db::accessors;
 use crate::db::utils::DbConn;

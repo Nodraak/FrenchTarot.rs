@@ -16,7 +16,7 @@ mod websockets;
 
 
 fn main() {
-    thread::spawn(|| {websockets::main("127.0.0.1:8001")});
+    thread::spawn(|| {websockets::server::main("127.0.0.1:8001")});
 
     rocket::ignite()
         // routes

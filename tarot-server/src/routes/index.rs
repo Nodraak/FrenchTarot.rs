@@ -4,7 +4,7 @@ use crate::db::accessors::game;
 use crate::db::utils::DbConn;
 use crate::routes::user::User;
 
-use tarot_lib::game::Game;
+use tarot_lib::game::game::Game;
 
 
 #[get("/")]
