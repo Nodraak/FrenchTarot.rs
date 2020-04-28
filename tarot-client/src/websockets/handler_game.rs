@@ -1,4 +1,4 @@
-use tarot_lib::game::state_machine::Event;
+use tarot_lib::game::events::Event;
 
 
 pub fn on_message(msg: &Event) {

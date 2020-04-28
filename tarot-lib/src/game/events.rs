@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-use crate::game::events::data::WsConnectData;
+use crate::game::events_data::WsConnectData;
 
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

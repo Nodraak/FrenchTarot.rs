@@ -6,7 +6,7 @@ use uuid::Uuid;
 use serde_json;
 use ws::{listen, Handler, Sender, Result, Message, Handshake, CloseCode, Error, ErrorKind};
 
-use tarot_lib::game::{events, state_machine};
+use tarot_lib::game::{events, events_data};
 
 
 struct GameData {
@@ -81,7 +81,7 @@ impl Handler for Connection {
             }
             // broadcast connection close to other players
             else {
-                let event = state_machine::Event::WsDisconnect(events::data::WsConnectData {
+                let event = events::Event::WsDisconnect(events_data::WsConnectData {
                     username: "todo_username_from_server".to_string(),
                 });
                 let msg = Message::Text(serde_json::to_string(&event).unwrap());
@@ -97,7 +97,7 @@ impl Handler for Connection {
     fn on_message(&mut self, msg: Message) -> Result<()> {
         println!("on_message(): {:?}", msg);
 
-        let deserialized: state_machine::Event = serde_json::from_slice(&msg.clone().into_data()).unwrap();
+        let deserialized: events::Event = serde_json::from_slice(&msg.clone().into_data()).unwrap();
         println!("-> {:?}", deserialized);
 
         // find game id

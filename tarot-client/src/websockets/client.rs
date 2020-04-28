@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
 
-use tarot_lib::game::{events, state_machine};
+use tarot_lib::game::{events, events_data};
 
 use crate::websockets::handler_game;
 use crate::websockets::handler_ui;
@@ -18,7 +18,7 @@ macro_rules! console_log {
 fn on_open(ws: &WebSocket, username: String, v: JsValue) {
     console_log!("on_open(): {:?}", v);
 
-    let event = state_machine::Event::WsConnect(events::data::WsConnectData {
+    let event = events::Event::WsConnect(events_data::WsConnectData {
         username: username,
     });
     let ret = ws.send_with_str(&serde_json::to_string(&event).unwrap());
@@ -45,7 +45,7 @@ fn on_message(msg: MessageEvent) {
         .data()
         .as_string()
         .expect("Can't convert received data to a string");
-    let deserialized: state_machine::Event = serde_json::from_str(&data).unwrap();
+    let deserialized: events::Event = serde_json::from_str(&data).unwrap();
 
     console_log!("on_message(): {:?}", deserialized);
 

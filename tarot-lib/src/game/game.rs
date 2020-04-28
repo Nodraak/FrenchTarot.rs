@@ -17,11 +17,12 @@ use crate::player::Player;
 pub struct Game<'a> {
     pub uuid: Uuid,
     pub max_players_count: i32,
+    pub players: Vec<Player>,
     pub creator: Option<&'a Player>,
-//    pub phase: GamePhase,
 
-    pub players: Vec<&'a Player>,
+//    pub phase: GamePhase,
 }
+
 
 impl Serialize for Game<'_> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
