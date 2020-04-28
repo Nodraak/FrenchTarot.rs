@@ -2,22 +2,39 @@ body {
     margin: 0;
 }
 
-#main {
-    margin: auto;
+#info p {
+    margin-top: 0;
 }
 
-#board, #info {
+#table, #info {
     display: inline-block;
-    height: 600px;
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
 }
 
-#board {
+#table {
     width: 75%;
     background-color: rgb(128, 192, 128);
 }
 
 #info {
+    left: 75%;
     width: 25%;
+}
+
+#game, #events {
+    width: 100%;
+}
+
+#game {
     background-color: rgb(192, 192, 192);
+    height: 300px;
+}
+
+#events {
+    background-color: rgb(128, 128, 128);
     position: absolute;
+    top: 300px;
+    bottom: 0px;
 }

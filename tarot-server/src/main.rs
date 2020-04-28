@@ -1,4 +1,5 @@
 #![feature(proc_macro_hygiene, decl_macro)]
+#![feature(vec_remove_item)]
 
 #[macro_use] extern crate diesel;
 #[macro_use] extern crate rocket;

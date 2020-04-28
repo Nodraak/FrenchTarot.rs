@@ -5,16 +5,20 @@ use crate::utils;
 
 pub fn init(document: &web_sys::Document, game_uuid: Uuid) -> utils::Result<()> {
     let main = document.get_element_by_id("main").unwrap();
-    main.set_inner_html(r#"
-        <div id="table">
-        </div>
-        <div id="info">
-            <div id="game">
+    main.set_inner_html(&format!(
+        r#"
+            <div id="table">
             </div>
-            <div id="events">
+            <div id="info">
+                <div id="game">
+                    <p>Game id: <a href="/game/play/{}">{}</a></p>
+                </div>
+                <div id="events">
+                </div>
             </div>
-        </div>
-    "#);
+        "#,
+        game_uuid.to_string(), game_uuid.to_string(),
+    ));
 
     Ok(())
 }
