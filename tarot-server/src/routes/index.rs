@@ -14,12 +14,12 @@ pub fn index(user: User, conn: DbConn) -> Template {
 
     use serde::ser::{Serialize, Serializer, SerializeStruct};
 
-    struct Context<'a> {
+    struct Context {
         username: String,
-        games: Vec<Game<'a>>,
+        games: Vec<Game>,
     }
 
-    impl Serialize for Context<'_> {
+    impl Serialize for Context {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,

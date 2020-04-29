@@ -9,8 +9,9 @@ pub enum Event {
     WsDisconnect(WsConnectData),
 
 /*
-    GameJoin(GameJoinData),
-    GameQuit(GameJoinData),
+    CreateGame(CreateGameData),
+    GameJoin(CreateGameData),
+    GameQuit,
 
     GameStart,  // TODO: reason: Complete / Majority / Master
 

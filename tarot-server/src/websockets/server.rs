@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 
@@ -7,17 +6,22 @@ use serde_json;
 use ws::{listen, Handler, Sender, Result, Message, Handshake, CloseCode, Error, ErrorKind};
 
 use tarot_lib::game::{events, events_data};
+use tarot_lib::game::game::Game;
 
 
 struct GameData {
-    socket2game: HashMap<Sender, Uuid>,
-    game2sockets: HashMap<Uuid, Vec<Sender>>,
+    sockets: Vec<Sender>,
+    game: Option<Game>,
 }
 
 
 struct Connection {
+    // shared data
+    server_data: Arc<Mutex<HashMap<Uuid, GameData>>>,
+
+    // connection-specific data
     ws: Sender,
-    game_data: Arc<Mutex<GameData>>,
+    game_uuid: Option<Uuid>,
 }
 
 
@@ -45,15 +49,19 @@ impl Handler for Connection {
         //    Err => ws.close
         //    Ok => self.user = decoded
 
-        // register this new connection
+        // register this new game
 
-        let mut game_data = self.game_data.lock().unwrap();
+        self.game_uuid = Some(game_uuid);
 
-        game_data.socket2game.insert(self.ws.clone(), game_uuid);
+        let mut server_data = self.server_data.lock().unwrap();
 
-        game_data.game2sockets
-            .entry(game_uuid).or_insert(Vec::new())     // get or create game entry
-            .push(self.ws.clone());                     // add socket
+        // get or create the game
+        let game_data = server_data.entry(game_uuid).or_insert(GameData {
+            sockets: Vec::new(),
+            game: None,
+        });
+
+        game_data.sockets.push(self.ws.clone());
 
         Ok(())
     }
@@ -61,32 +69,24 @@ impl Handler for Connection {
     fn on_close(&mut self, code: CloseCode, reason: &str) {
         println!("on_close(): {:?} - {:?}", code, reason);
 
-        let mut game_data = self.game_data.lock().unwrap();
-        let game_uuid = game_data.socket2game[&self.ws];
+        let mut server_data = self.server_data.lock().unwrap();
+        let game_data = server_data.get_mut(&self.game_uuid.unwrap()).unwrap();
 
-        for socket in game_data.game2sockets[&game_uuid].clone() {
+        // remove player from list
+        game_data.sockets.remove_item(&self.ws);
 
-            // remove player from list
-            if socket == self.ws {
-                game_data.socket2game.remove(&self.ws);
+        // broadcast connection close to other players
+        for socket in &game_data.sockets {
+            let event = events::Event::WsDisconnect(events_data::WsConnectData {
+                username: "todo_username_from_server".to_string(),
+            });
+            let msg = Message::Text(serde_json::to_string(&event).unwrap());
+            socket.send(msg);
+        }
 
-                match game_data.game2sockets.entry(game_uuid) {
-                    Occupied(mut entry) => { entry.get_mut().remove_item(&self.ws); }
-                    Vacant(entry) => {},
-                }
-
-                if game_data.game2sockets[&game_uuid].len() == 0 {
-                    game_data.game2sockets.remove(&game_uuid);
-                }
-            }
-            // broadcast connection close to other players
-            else {
-                let event = events::Event::WsDisconnect(events_data::WsConnectData {
-                    username: "todo_username_from_server".to_string(),
-                });
-                let msg = Message::Text(serde_json::to_string(&event).unwrap());
-                socket.send(msg);
-            }
+        // if game does not have any players anymore, delete it
+        if game_data.sockets.is_empty() {
+            server_data.remove(&self.game_uuid.unwrap());
         }
     }
 
@@ -102,8 +102,8 @@ impl Handler for Connection {
 
         // find game id
 
-        let game_data = self.game_data.lock().unwrap();
-        let game_uuid = game_data.socket2game[&self.ws];
+        let server_data = self.server_data.lock().unwrap();
+        let game_data = &server_data[&self.game_uuid.unwrap()];
 
         // update game
         // TODO - from tarot_lib?
@@ -113,7 +113,7 @@ impl Handler for Connection {
 
         // broadcast the msg to everyone else, except us
 
-        for socket in &game_data.game2sockets[&game_uuid] {
+        for socket in &game_data.sockets {
             if *socket != self.ws {
                 socket.send(msg.clone());
             }
@@ -124,13 +124,13 @@ impl Handler for Connection {
 }
 
 pub fn main(addr: &str) {
-    let games_data = Arc::new(Mutex::new(GameData {
-        socket2game: HashMap::new(),
-        game2sockets: HashMap::new(),
-    }));
+    let server_data = Arc::new(Mutex::new(
+        HashMap::<Uuid, GameData>::new()
+    ));
 
     listen(addr, |ws| { Connection {
+        server_data: Arc::clone(&server_data),
         ws: ws,
-        game_data: Arc::clone(&games_data),
+        game_uuid: None,
     }}).unwrap();
 }

@@ -1,9 +1,12 @@
+use std::sync::{Arc, Mutex};
+
 use serde_json;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
 
 use tarot_lib::game::{events, events_data};
+use tarot_lib::game::game::Game;
 
 use crate::websockets::handler_game;
 use crate::websockets::handler_ui;
@@ -15,13 +18,22 @@ macro_rules! console_log {
 }
 
 
-fn on_open(ws: &WebSocket, username: String, v: JsValue) {
+struct GameData {
+    username: String,
+    game: Option<Game>,
+    socket: WebSocket,
+}
+
+
+fn on_open(game_data: Arc<Mutex<GameData>>, v: JsValue) {
     console_log!("on_open(): {:?}", v);
 
+    let game_data = game_data.lock().unwrap();
+
     let event = events::Event::WsConnect(events_data::WsConnectData {
-        username: username,
+        username: game_data.username.clone(),
     });
-    let ret = ws.send_with_str(&serde_json::to_string(&event).unwrap());
+    let ret = game_data.socket.send_with_str(&serde_json::to_string(&event).unwrap());
 
     if let Err(err) = ret {
         console_log!("error sending message: {:?}", err);
@@ -57,8 +69,13 @@ fn on_message(msg: MessageEvent) {
 pub fn main(addr: String, username: String) -> Result<(), JsValue> {
     let ws = WebSocket::new(&addr)?;
 
-    let on_open_ws = ws.clone();
-    let c = Closure::wrap(Box::new(move |v| { on_open(&on_open_ws, username.clone(), v); }) as Box<dyn FnMut(JsValue)>);
+    let game_data = Arc::new(Mutex::new(GameData {
+        username: username.clone(),
+        game: None,
+        socket: ws.clone(),
+    }));
+
+    let c = Closure::wrap(Box::new(move |v| { on_open(Arc::clone(&game_data), v); }) as Box<dyn FnMut(JsValue)>);
     ws.set_onopen(Some(c.as_ref().unchecked_ref()));
     c.forget();
 

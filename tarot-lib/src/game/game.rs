@@ -14,17 +14,19 @@ use uuid::Uuid;
 use crate::player::Player;
 
 
-pub struct Game<'a> {
+pub struct Game {
+    // TODO: have a hasmap player_uuid->Player, and a creator_uuid
+
     pub uuid: Uuid,
     pub max_players_count: i32,
     pub players: Vec<Player>,
-    pub creator: Option<&'a Player>,
+    pub creator: Option<Player>,
 
 //    pub phase: GamePhase,
 }
 
 
-impl Serialize for Game<'_> {
+impl Serialize for Game {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
