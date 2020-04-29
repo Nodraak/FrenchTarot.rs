@@ -8,12 +8,14 @@
     // talking
         // best_talk: <player, what>
 
-use serde::ser::{Serialize, Serializer, SerializeStruct};
+use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
+use crate::game::events::Event;
 use crate::player::Player;
 
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Game {
     // TODO: have a hasmap player_uuid->Player, and a creator_uuid
 
@@ -26,17 +28,9 @@ pub struct Game {
 }
 
 
-impl Serialize for Game {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        // 4 is the number of fields in the struct.
-        let mut state = serializer.serialize_struct("Game", 4)?;
-        state.serialize_field("uuid", &self.uuid)?;
-        state.serialize_field("max_players_count", &self.max_players_count)?;
-        state.serialize_field("creator", &self.creator)?;
-        state.serialize_field("players", &self.players)?;
-        state.end()
+impl Game {
+    pub fn update(&mut self, event: &Event) -> Result<(), String> {
+
+        Ok(())
     }
 }

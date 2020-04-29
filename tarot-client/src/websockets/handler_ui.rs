@@ -15,7 +15,7 @@ pub fn events_append_str(msg: &str) {
 }
 
 
-pub fn on_message(msg: &Event) {
+pub fn update(msg: &Event) {
     match msg {
         Event::WsConnect(data) => {
             console_log!("on_message(): {:?}", data.username);

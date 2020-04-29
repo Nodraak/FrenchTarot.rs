@@ -1,16 +1,17 @@
 use serde::{Serialize, Deserialize};
 
-use crate::game::events_data::WsConnectData;
+use crate::game::events_data;
 
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Event {
-    WsConnect(WsConnectData),
-    WsDisconnect(WsConnectData),
+    WsConnect(events_data::WsConnectData),
+    WsDisconnect(events_data::WsConnectData),
+
+    CreateGame(events_data::CreateGameData),
+    GameJoin(events_data::CreateGameData),
 
 /*
-    CreateGame(CreateGameData),
-    GameJoin(CreateGameData),
     GameQuit,
 
     GameStart,  // TODO: reason: Complete / Majority / Master

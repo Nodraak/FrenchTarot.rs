@@ -102,21 +102,30 @@ impl Handler for Connection {
 
         // find game id
 
-        let server_data = self.server_data.lock().unwrap();
-        let game_data = &server_data[&self.game_uuid.unwrap()];
+        let mut server_data = self.server_data.lock().unwrap();
+        let game_data = server_data.get_mut(&self.game_uuid.unwrap()).unwrap();
 
-        // update game
-        // TODO - from tarot_lib?
+        // try updating the game
+
+        let ret = game_data.game.as_mut().unwrap().update(&deserialized);
 
         // send status ok/fail
-        // TODO
 
-        // broadcast the msg to everyone else, except us
-
-        for socket in &game_data.sockets {
-            if *socket != self.ws {
-                socket.send(msg.clone());
-            }
+        match ret {
+            Ok(_) => {
+                // send back "ok" and broadcast the msg to everyone else
+                for socket in &game_data.sockets {
+                    if *socket == self.ws {
+                        // TODO send ok self.ws.send();
+                    } else {
+                        socket.send(msg.clone());
+                    }
+                }
+            },
+            Err(val) =>  {
+                // TODO send error self.ws.send();
+                panic!(val); // TODO better error handling
+            },
         }
 
         Ok(())

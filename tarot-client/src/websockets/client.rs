@@ -5,10 +5,10 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{ErrorEvent, MessageEvent, WebSocket};
 
-use tarot_lib::game::{events, events_data};
+use tarot_lib::game::events::Event;
+use tarot_lib::game::events_data;
 use tarot_lib::game::game::Game;
 
-use crate::websockets::handler_game;
 use crate::websockets::handler_ui;
 use crate::js_api::log;
 
@@ -25,15 +25,13 @@ struct GameData {
 }
 
 
-fn on_open(game_data: Arc<Mutex<GameData>>, v: JsValue) {
+fn on_open(ws: &WebSocket, username: String, v: JsValue) {
     console_log!("on_open(): {:?}", v);
 
-    let game_data = game_data.lock().unwrap();
-
-    let event = events::Event::WsConnect(events_data::WsConnectData {
-        username: game_data.username.clone(),
+    let event = Event::WsConnect(events_data::WsConnectData {
+        username: username,
     });
-    let ret = game_data.socket.send_with_str(&serde_json::to_string(&event).unwrap());
+    let ret = ws.send_with_str(&serde_json::to_string(&event).unwrap());
 
     if let Err(err) = ret {
         console_log!("error sending message: {:?}", err);
@@ -52,17 +50,33 @@ fn on_error(error: ErrorEvent) {
     handler_ui::events_append_str("Connection error. Try refreshing the page.");
 }
 
-fn on_message(msg: MessageEvent) {
+fn on_message(game_data_: Arc<Mutex<GameData>>, msg: MessageEvent) {
+    let mut game_data = game_data_.lock().unwrap();
+
     let data = msg
         .data()
         .as_string()
         .expect("Can't convert received data to a string");
-    let deserialized: events::Event = serde_json::from_str(&data).unwrap();
+    let deserialized: Event = serde_json::from_str(&data).unwrap();
 
     console_log!("on_message(): {:?}", deserialized);
 
-    handler_game::on_message(&deserialized);
-    handler_ui::on_message(&deserialized);
+    // set or update game
+    let ret = match &deserialized {
+        Event::CreateGame(data) | Event::GameJoin(data) => {
+            game_data.game = Some(data.game.clone());
+            Ok(())
+        },
+        _ => {
+            game_data.game.as_mut().unwrap().update(&deserialized)
+        },
+    };
+
+    // update ui
+    match ret {
+        Ok(_) => { handler_ui::update(&deserialized); },
+        Err(val) => { panic!(val); }, // TODO proper error handling
+    }
 }
 
 
@@ -75,7 +89,8 @@ pub fn main(addr: String, username: String) -> Result<(), JsValue> {
         socket: ws.clone(),
     }));
 
-    let c = Closure::wrap(Box::new(move |v| { on_open(Arc::clone(&game_data), v); }) as Box<dyn FnMut(JsValue)>);
+    let ws_onopen = ws.clone();
+    let c = Closure::wrap(Box::new(move |v| { on_open(&ws_onopen, username.clone(), v); }) as Box<dyn FnMut(JsValue)>);
     ws.set_onopen(Some(c.as_ref().unchecked_ref()));
     c.forget();
 
@@ -87,7 +102,7 @@ pub fn main(addr: String, username: String) -> Result<(), JsValue> {
     ws.set_onerror(Some(c.as_ref().unchecked_ref()));
     c.forget();
 
-    let c = Closure::wrap(Box::new(move |e| { on_message(e); }) as Box<dyn FnMut(MessageEvent)>);
+    let c = Closure::wrap(Box::new(move |e| { on_message(Arc::clone(&game_data), e); }) as Box<dyn FnMut(MessageEvent)>);
     ws.set_onmessage(Some(c.as_ref().unchecked_ref()));
     c.forget();
 

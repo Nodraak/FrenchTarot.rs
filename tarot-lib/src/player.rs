@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Player {
     pub uuid: Uuid,
     pub username: String,
