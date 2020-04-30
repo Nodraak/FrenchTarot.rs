@@ -22,7 +22,7 @@ pub struct Game {
     pub uuid: Uuid,
     pub max_players_count: i32,
     pub players: Vec<Player>,
-    pub creator: Option<Player>,
+    pub creator_uuid: Uuid,
 
 //    pub phase: GamePhase,
 }

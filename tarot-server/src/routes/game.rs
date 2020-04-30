@@ -10,15 +10,15 @@ use tarot_lib::game::game::Game as GameObj;
 
 use crate::db::accessors;
 use crate::db::utils::DbConn;
-use crate::routes::user::User;
+use crate::routes::utils::User;
 
 
 #[derive(FromForm)]
-pub struct GameCreate {
+pub struct GameCreateForm {
     max_players_count: i32,
 }
 
-impl FromFormValue<'_> for GameCreate {
+impl FromFormValue<'_> for GameCreateForm {
     type Error = &'static str;
 
     fn from_form_value(v: &RawStr) -> Result<Self, Self::Error> {
@@ -28,7 +28,7 @@ impl FromFormValue<'_> for GameCreate {
         };
 
         if (2 <= max_players_count) && (max_players_count <= 5) {
-            Ok(GameCreate { max_players_count: max_players_count })
+            Ok(GameCreateForm { max_players_count: max_players_count })
         } else {
             Err("Players must be 2 <= and <= 5")
         }
@@ -37,9 +37,9 @@ impl FromFormValue<'_> for GameCreate {
 
 
 #[get("/")]
-pub fn index(user: User) -> Template {
-    let context = HashMap::<&str, &str>::new();
-    // TODO read games from db
+pub fn index(user: User, conn: DbConn) -> Template {
+    let mut context = HashMap::<&str, Vec<GameObj>>::new();
+    context.insert("games", accessors::game::list(&conn));
     Template::render("game/index", &context)
 }
 
@@ -50,29 +50,23 @@ pub fn create_get(user: User) -> Template {
 }
 
 #[post("/create", data = "<game>")]
-pub fn create_post(game: Form<GameCreate>, user: User, conn: DbConn) -> Result<Redirect, String> {
+pub fn create_post(game: Form<GameCreateForm>, user: User, conn: DbConn) -> Result<Redirect, String> {
     let game_uuid = Uuid::new_v4();
-
-    // TODO update db with game.players
 
     accessors::game::create(&conn, GameObj {
         uuid: game_uuid,
         max_players_count: game.max_players_count,
-        creator: None,
+        creator_uuid: user.uuid,
         players: vec![],
     });
-
-    // TODO create the game state machine
 
     Ok(Redirect::to(format!("/game/play/{}", game_uuid.to_string())))
 }
 
-#[get("/play/<id>")]
-pub fn play(id: String, user: User) -> Template {
-    // TODO check join as player or watcher
-
+#[get("/play/<uuid>")]
+pub fn play(uuid: String, user: User) -> Template {
     let mut context = HashMap::<&str, String>::new();
-    context.insert("game_id", id);
-    context.insert("username", user.username.clone());
+    context.insert("game_uuid", uuid);
+    context.insert("user_uuid", user.uuid.to_string());
     Template::render("game/play", &context)
 }

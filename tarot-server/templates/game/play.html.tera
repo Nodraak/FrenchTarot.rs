@@ -7,8 +7,8 @@
         async function run_tarot_client() {
             await init();
             main(
-                "{{ game_id }}",
-                "{{ username }}",
+                "{{ game_uuid }}",
+                "{{ user_uuid }}",
             );
         }
         run_tarot_client();

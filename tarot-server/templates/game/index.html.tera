@@ -1,5 +1,11 @@
 {% extends "base" %}
 
 {% block body %}
-    game
+    <h1>List of games</h1>
+
+    <ul>
+        {% for g in games %}
+            <li><a href="/game/play/{{ g.uuid }}">{{ g.uuid }}</a></li>
+        {% endfor %}
+    </ul>
 {% endblock body %}

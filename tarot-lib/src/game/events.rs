@@ -8,11 +8,12 @@ pub enum Event {
     WsConnect(events_data::WsConnectData),
     WsDisconnect(events_data::WsConnectData),
 
-    CreateGame(events_data::CreateGameData),
-    GameJoin(events_data::CreateGameData),
+    Game(events_data::GameData),
+
+    GameJoin(events_data::WsConnectData),
 
 /*
-    GameQuit,
+    GameQuit, // reason: rage_quit
 
     GameStart,  // TODO: reason: Complete / Majority / Master
 
@@ -30,6 +31,7 @@ pub enum Event {
 }
 
 
+/*
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum GameState {
     WaitingPlayers,
@@ -39,3 +41,4 @@ pub enum GameState {
     Playing,
     Finished,
 }
+*/

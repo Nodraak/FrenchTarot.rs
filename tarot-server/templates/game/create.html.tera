@@ -3,8 +3,8 @@
 {% block body %}
     <h1>game create</h1>
     <form method="post">
-        <label for="number">Number of players:</label>
-        <input type="number" name="players">
+        <label>Number of players:</label>
+        <input type="number" name="max_players_count">
         <br/>
         <input type="submit" value="Create game">
     </form>

@@ -10,14 +10,7 @@ pub struct WsConnectData {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CreateGameData {
+pub struct GameData {
     pub game: Game,
     // possibly other fields
 }
-
-/*
-#[derive(Clone, Serialize, Deserialize)]
-pub struct DealResultData {
-    // TODO hand
-}
-*/

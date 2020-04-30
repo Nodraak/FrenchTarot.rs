@@ -38,3 +38,9 @@ body {
     top: 300px;
     bottom: 0px;
 }
+
+#events p {
+    margin: 4px;
+    font-size: 14px;
+    font-variant: small-caps;
+}

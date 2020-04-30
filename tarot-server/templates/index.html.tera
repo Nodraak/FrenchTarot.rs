@@ -12,12 +12,4 @@
     </ul>
     </p>
 
-    <hr/>
-
-    <ul>
-        {% for g in games %}
-            <li><a href="/game/play/{{ g.uuid }}">{{ g.uuid }}</a></li>
-        {% endfor %}
-    </ul>
-
 {% endblock body %}

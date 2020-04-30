@@ -1,34 +1,50 @@
 use std::collections::HashMap;
 
-use rocket::http::{Cookie, Cookies};
+use rocket::http::Cookie;
 use rocket::request::{self, Form, FromRequest, Request};
 use rocket::response::Redirect;
 use rocket_contrib::templates::Template;
+use uuid::Uuid;
+
+use crate::db::accessors::users;
+use crate::db::utils::DbConn;
+use crate::routes::utils::User;
 
 
 #[derive(FromForm)]
-pub struct User {
+pub struct UserCreateForm {
     pub username: String,
 }
 
 impl<'a, 'r> FromRequest<'a, 'r> for User {
     type Error = &'static str;
 
-    fn from_request(request: &'a Request<'r>) -> request::Outcome<User, Self::Error> {
-        let cookie = request.cookies().get_private("username");
-        match cookie {
+    fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
+        let conn = DbConn::from_request(request).unwrap();
+
+        let cookie = request.cookies().get_private("uuid");
+        let u: User = match cookie {
+            // existing user
             Some(c) => {
-                rocket::Outcome::Success(User {username: c.value().to_string() })
+                users::get(&conn, Uuid::parse_str(&c.value().to_string()).unwrap())
             }
+            // new user
             None => {
-                let username = "Guest42";  // TODO: generate name
+                let username = "Guest42".to_string();
 
-                // TODO store in db
-                request.cookies().add_private(Cookie::new("username", username));
+                let u = User {
+                    uuid: Uuid::new_v4(),
+                    username: username,
+                };
 
-                rocket::Outcome::Success(User {username: username.to_string() })
+                users::create(&conn, &u);
+                request.cookies().add_private(Cookie::new("uuid", u.uuid.to_string()));
+
+                u
             }
-        }
+        };
+
+        rocket::Outcome::Success(u)
     }
 }
 
@@ -40,12 +56,12 @@ pub fn get(user: User) -> Template {
     Template::render("user/index", &context)
 }
 
-#[post("/", data = "<user>")]
-pub fn post(user: Form<User>, mut cookies: Cookies) -> Result<Redirect, String> {
-    // TODO check in db it does not already exists
-
-    // TODO store in db
-    cookies.add_private(Cookie::new("username", user.username.clone()));
+#[post("/", data = "<user_data>")]
+pub fn post(user_session: User, user_data: Form<UserCreateForm>, conn: DbConn) -> Result<Redirect, String> {
+    users::update(&conn, user_session.uuid, User {
+        uuid: user_session.uuid,
+        username: user_data.username.clone(),
+    });
 
     Ok(Redirect::to("/"))
 }
