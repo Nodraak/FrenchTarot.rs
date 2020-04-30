@@ -2,12 +2,13 @@
 
 French tarot game built with Rust and WASM.
 
+![](docs/Screenshot.png)
+
 ## Architecture
 
-* Tarot-lib: used by Tarot-game and backend. Contains Card, Player, Game, etc. Lib.
-* Tarot-game: tarot client. WASM app.
-* Backend: tarot server. Exe.
+* tarot-lib: used by tarot-client and tarot-server. Contains Card, Player, Game, etc. Compiled as lib.
+* tarot-client: web WASM app.
+* tarot-server: executable.
 
-Tarot-game and Backend communicate with HTTP post requests. Tarot-game makes
-regular statys check requests and backend answers with a list of Messages. Yes,
-it should be a websocket or something, but let's make a working MVP first.
+The web site starts with standard HTTP requests, and the URL /game/play/ loads the WASM app.
+From this point, tarot-client and tarot-server communicate over websockets.
