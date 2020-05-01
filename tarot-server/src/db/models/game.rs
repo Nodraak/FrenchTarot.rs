@@ -1,3 +1,5 @@
+use std::cmp::PartialEq;
+
 use diesel::sqlite::SqliteConnection;
 use diesel::RunQueryDsl;
 use diesel::prelude::*;
@@ -7,55 +9,125 @@ use uuid;
 use tarot_lib::game::game::Game as GameObj;
 use tarot_lib::player::Player as PlayerObj;
 
-use crate::db::models::game::Game as GameData;
-use crate::db::models::game::GamePlayers as GamePlayersData;
 use crate::db::models::user::User as UserData;
 use crate::db::schema::{games, game_players, users};
 use crate::db::utils;
 
 
-#[derive(Insertable, Queryable)]
+#[derive(PartialEq)]
+#[derive(AsChangeset, Insertable, Queryable)]
 #[derive(Serialize)]
 #[table_name="games"]
+#[primary_key(uuid)]
 pub struct Game {
     pub uuid: utils::Uuid,
     pub max_players_count: i32,
     pub creator_uuid: Option<utils::Uuid>,  // User.Uuid
 }
 
-#[derive(Insertable, Queryable)]
+#[derive(PartialEq)]
+#[derive(AsChangeset, Insertable, Queryable)]
 #[derive(Serialize)]
 #[table_name="game_players"]
+#[primary_key(uuid)]
 pub struct GamePlayers {
     pub uuid: utils::Uuid,
     pub user_uuid: Option<utils::Uuid>,  // User.uuid
     pub game_uuid: Option<utils::Uuid>,  // Game.uuid
 }
 
+impl Game {
+    pub fn from_GameObj(conn: &SqliteConnection, game_obj: &GameObj) -> (Game, Vec<GamePlayers>) {
 
-pub fn create(conn: &SqliteConnection, game_obj: GameObj) {
-    // create game
+        // convert GameObj to Game
 
-    diesel::insert_into(games::table)
-        .values(GameData {
+        let game_db = Game {
             uuid: game_obj.uuid.to_string(),
             max_players_count: game_obj.max_players_count,
             creator_uuid: Some(game_obj.creator_uuid.to_string()),
-        })
+        };
+
+        // load/create GamePlayers
+
+        let mut game_players_db = Vec::new();
+
+        for player_obj in &game_obj.players {
+
+            let result = users::dsl::users
+                .find(&player_obj.uuid.to_string())
+                .get_result::<UserData>(conn);
+
+            let player_uuid = match result {
+                Err(_) => { uuid::Uuid::new_v4().to_string() },
+                Ok(player_db) => { player_db.uuid },
+            };
+
+            game_players_db.push(GamePlayers {
+                uuid: player_uuid,
+                user_uuid: Some(player_obj.uuid.to_string()),
+                game_uuid: Some(game_db.uuid.clone()),
+            });
+        }
+
+        // return
+
+        (game_db, game_players_db)
+    }
+
+    pub fn to_GameObj(&self, conn: &SqliteConnection, game_players: &Vec<GamePlayers>) -> GameObj {
+
+        // convert GamePlayers to Players
+
+        let mut players_obj: Vec<PlayerObj> = Vec::new();
+
+        for game_player_db in game_players {
+            // load player
+            let player_db: UserData = users::dsl::users
+                .find(&game_player_db.uuid)
+                .get_result(conn)
+                .expect("Could not load User");
+
+            players_obj.push(PlayerObj {
+                uuid: uuid::Uuid::parse_str(&game_player_db.uuid).unwrap(),
+                username: player_db.username.clone(),
+            });
+        }
+
+        // convert Game to GameObj
+
+        let g = GameObj {
+            uuid: uuid::Uuid::parse_str(&self.uuid).unwrap(),
+            max_players_count: self.max_players_count,
+            creator_uuid: uuid::Uuid::parse_str(&self.creator_uuid.clone().unwrap()).unwrap(),
+            players: players_obj,
+        };
+
+        // return
+
+        g
+    }
+}
+
+
+pub fn create(conn: &SqliteConnection, game_obj: GameObj) {
+
+    // convert
+    let (g, gps) = Game::from_GameObj(conn, &game_obj);
+
+    // insert game
+
+    diesel::insert_into(games::table)
+        .values(g)
         .execute(conn)
-        .expect("Error saving new game");
+        .expect("Could not save new Game");
 
-    // add game players
+    // insert game players
 
-    for p in game_obj.players {
+    for gp in gps {
         diesel::insert_into(game_players::table)
-            .values(GamePlayersData {
-                uuid: uuid::Uuid::new_v4().to_string(),
-                user_uuid: Some(p.uuid.to_string()),
-                game_uuid: Some(game_obj.uuid.to_string()),
-            })
+            .values(gp)
             .execute(conn)
-            .expect("Error saving new game player");
+            .expect("Could not save new GamePlayers");
     }
 }
 
@@ -63,97 +135,54 @@ pub fn get(conn: &SqliteConnection, uuid: uuid::Uuid) -> GameObj {
 
     // get game_players
 
-    let results = game_players::dsl::game_players
+    let results: Vec<GamePlayers> = game_players::dsl::game_players
         .filter(game_players::dsl::game_uuid.eq(uuid.to_string()))
-        .load::<GamePlayersData>(conn)
-        .expect("Error loading GamePlayers");
-
-    let mut players = Vec::new();
-
-    for gp in results {
-        let p = users::dsl::users
-            .filter(users::dsl::uuid.eq(&gp.uuid))
-            .load::<UserData>(conn)
-            .expect("Error loading User");
-
-        players.push(PlayerObj {
-            uuid: uuid::Uuid::parse_str(&gp.uuid).unwrap(),
-            username: p[0].username.clone(),
-        });
-    }
+        .load(conn)
+        .expect("Could not load GamePlayers");
 
     // get game
 
-    let results = games::dsl::games
-        .filter(games::dsl::uuid.eq(uuid.to_string()))
-        .load::<GameData>(conn)
-        .expect("Error loading games");
+    let result: Game = games::dsl::games
+        .find(uuid.to_string())
+        .get_result(conn)
+        .expect("Could not load Game");
 
-    if results.len() != 1 {
-        panic!("oh god - game get");
-    }
+    // convert and return
 
-    let g = GameObj {
-        uuid: uuid::Uuid::parse_str(&results[0].uuid).unwrap(),
-        max_players_count: results[0].max_players_count,
-        creator_uuid: uuid::Uuid::parse_str(&results[0].creator_uuid.as_ref().unwrap()).unwrap(),
-        players: players,
-    };
-
-    g
+    result.to_GameObj(conn, &results)
 }
 
 pub fn update(conn: &SqliteConnection, uuid: uuid::Uuid, game_obj: GameObj) {
 
-    diesel::update(games::table).set(
-        GameData {
-            uuid: game_obj.uuid.to_string(),
-            max_players_count: game_obj.max_players_count,
-            creator_uuid: Some(game_obj.creator_uuid.to_string()),
-        }
-    );
+    let (game_db, game_players_db_new) = Game::from_GameObj(conn, &game_obj);
 
-    // update players
-
-    let results = game_players::dsl::game_players
+    let game_players_db_old = game_players::dsl::game_players
         .filter(game_players::dsl::game_uuid.eq(game_obj.uuid.to_string()))
-        .load::<GamePlayersData>(conn)
-        .expect("Error loading GamePlayers");
+        .load::<GamePlayers>(conn)
+        .expect("Could not load GamePlayers");
 
-    /*
-    TODO delete old gp
+    // update game
 
-    for gp in results {
-        if game_obj.players.contains(PlayerObj {
-            uuid: uuid::Uuid::parse_str(&gp.uuid).unwrap(),
-            username: gp.username,
-        }) == false {
-            diesel::delete(
-                    game_players::dsl::game_players.filter(game_players::dsl::uuid.eq(gp.uuid))
-                )
-                .execute(&conn)
-                .expect("Error deleting gp");
+    diesel::update(games::table).set(game_db);
+
+    // update gp: delete old gp
+
+    for gp in &game_players_db_old {
+        if game_players_db_new.contains(&gp) == false {
+            diesel::delete(game_players::dsl::game_players.find(&gp.uuid))
+                .execute(conn)
+                .expect("Could not delete GamePlayers");
         }
     }
-    */
 
-    for p in game_obj.players {
-        if (
-            game_players::dsl::game_players
-                .filter(game_players::dsl::game_uuid.eq(game_obj.uuid.to_string()))
-                .filter(game_players::dsl::user_uuid.eq(p.uuid.to_string()))
-                .count()
-                .get_result::<i64>(conn)
-                .unwrap() == 0
-        ) {
+    // update gp: create new gp
+
+    for gp in &game_players_db_new {
+        if game_players_db_old.contains(&gp) == false {
             diesel::insert_into(game_players::table)
-                .values(GamePlayersData {
-                    uuid: uuid::Uuid::new_v4().to_string(),
-                    user_uuid: Some(p.uuid.to_string()),
-                    game_uuid: Some(game_obj.uuid.to_string()),
-                })
+                .values(gp)
                 .execute(conn)
-                .expect("Error saving new game player");
+                .expect("Could not save new GamePlayers");
         }
     }
 }
@@ -169,37 +198,17 @@ pub fn list(conn: &SqliteConnection) -> Vec<GameObj> {
     let game_results = games::dsl::games
         .limit(page_size)
         .offset(page_size*page_id)
-        .load::<GameData>(conn)
-        .expect("Error loading games");
+        .load::<Game>(conn)
+        .expect("Could not load Game");
 
     for g in game_results {
-        let players_results = game_players::dsl::game_players
+
+        let results = game_players::dsl::game_players
             .filter(game_players::dsl::game_uuid.eq(&g.uuid))
-            .load::<GamePlayersData>(conn)
-            .expect("Error loading games");
-        let mut players = Vec::<PlayerObj>::new();
-        for pg in players_results {
-            let user = users::dsl::users
-                .filter(users::dsl::uuid.eq(pg.user_uuid.unwrap()))
-                .load::<UserData>(conn)
-                .expect("Error loading games");
-            if user.len() != 0 {
-                panic!("oh god...");
-            }
+            .load::<GamePlayers>(conn)
+            .expect("Coult not load GamePlayers");
 
-            let p = PlayerObj {
-                uuid: uuid::Uuid::parse_str(&user[0].uuid).unwrap(),
-                username: user[0].username.clone(),
-            };
-            players.push(p);
-        }
-
-        ret.push(GameObj {
-            uuid: uuid::Uuid::parse_str(&g.uuid).unwrap(),
-            max_players_count: g.max_players_count,
-            creator_uuid: uuid::Uuid::parse_str(&g.creator_uuid.unwrap()).unwrap(),
-            players: players,
-        });
+        ret.push(g.to_GameObj(conn, &results));
     }
 
     ret
