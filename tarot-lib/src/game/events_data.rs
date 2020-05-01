@@ -1,6 +1,7 @@
 use serde::{Serialize, Deserialize};
 
 //use crate::player::Player;
+use crate::card;
 use crate::game::game::Game;
 
 
@@ -13,4 +14,9 @@ pub struct WsConnectData {
 pub struct GameData {
     pub game: Game,
     // possibly other fields
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DealResultData {
+    pub hand: card::Hand,
 }

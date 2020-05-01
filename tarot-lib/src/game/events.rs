@@ -12,13 +12,14 @@ pub enum Event {
 
     GameJoin(events_data::WsConnectData),
 
+    // TODO: deal cards manually?
+    DealResult(events_data::DealResultData),
+
 /*
     GameQuit, // reason: rage_quit
 
     //GameStart,  // TODO: reason: Complete / Majority / Master
 
-    // TODO: deal cards manually?
-    DealResult(DealResultData),
 
     BidAnnounce,
     BidResult,

@@ -7,6 +7,7 @@ use serde_json;
 use uuid::Uuid;
 use ws::{listen, Handler, Sender, Result, Message, Handshake, CloseCode, Error, ErrorKind};
 
+use tarot_lib::card::Card;
 use tarot_lib::game::{events, events_data};
 use tarot_lib::game::game::Game;
 use tarot_lib::player::Player;
@@ -137,7 +138,26 @@ impl Handler for Connection {
                 socket.send(msg_join.clone());
             }
 
-            // TODO autostart game
+            // autostart game
+
+            if game_data.game.players.len() == (game_data.game.max_players_count as usize) {
+
+                // deal cards
+
+                let (hands, dog) = Card::deal_random(game_data.game.players.len());
+
+                // send DealResult
+
+                for (s, h) in game_data.sockets.iter().zip(hands) {
+                    let msg = Message::Text(serde_json::to_string(
+                        &events::Event::DealResult(events_data::DealResultData {
+                            hand: h,
+                        })
+                    ).unwrap());
+
+                    s.send(msg.clone());
+                }
+            }
         }
 
         Ok(())
@@ -153,12 +173,13 @@ impl Handler for Connection {
         game_data.sockets.remove_item(&self.ws);
 
         // broadcast connection close to other players
-        for socket in &game_data.sockets {
-            let event = events::Event::WsDisconnect(events_data::WsConnectData {
+        let msg = Message::Text(serde_json::to_string(
+            &events::Event::WsDisconnect(events_data::WsConnectData {
                 username: self.player_username.as_ref().unwrap().clone(),
-            });
-            let msg = Message::Text(serde_json::to_string(&event).unwrap());
-            socket.send(msg);
+            }),
+        ).unwrap());
+        for socket in &game_data.sockets {
+            socket.send(msg.clone());
         }
 
         // if game does not have any players anymore, delete it
