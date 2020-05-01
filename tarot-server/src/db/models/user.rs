@@ -7,7 +7,7 @@ use uuid;
 use crate::db::models::user::User as UserData;
 use crate::db::schema::users;
 use crate::db::utils;
-use crate::routes::utils::User as UserObj;
+use crate::http_routes::utils::User as UserObj;
 
 
 #[derive(Insertable, Queryable)]

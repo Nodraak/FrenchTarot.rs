@@ -11,7 +11,7 @@ use rocket_contrib::templates::Template;
 
 mod conf;
 mod db;
-mod routes;
+mod http_routes;
 mod websockets;
 
 
@@ -20,10 +20,10 @@ fn main() {
 
     rocket::ignite()
         // routes
-        .mount("/", routes![routes::index::index])
-        .mount("/api", routes![routes::api::game_get, routes::api::player_get])
-        .mount("/user", routes![routes::user::get, routes::user::post])
-        .mount("/game", routes![routes::game::index, routes::game::create_get, routes::game::create_post, routes::game::play])
+        .mount("/", http_routes::index::get_routes())
+        .mount("/api", http_routes::api::get_routes())
+        .mount("/user", http_routes::user::get_routes())
+        .mount("/game", http_routes::game::get_routes())
         // db, templates and static files
         .attach(db::utils::DbConn::fairing())
         .attach(Template::fairing())

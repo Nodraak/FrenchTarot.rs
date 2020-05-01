@@ -2,11 +2,18 @@ use std::collections::HashMap;
 
 use rocket_contrib::templates::Template;
 
-use crate::routes::utils::User;
+use crate::http_routes::utils::User;
+
+
+pub fn get_routes() -> Vec<rocket::Route> {
+    routes![
+        index,
+    ]
+}
 
 
 #[get("/")]
-pub fn index(user: User) -> Template {
+fn index(user: User) -> Template {
     let mut context = HashMap::new();
     context.insert("username", user.username);
     Template::render("index", &context)

@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::db::models::user;
 use crate::db::utils::DbConn;
-use crate::routes::utils::User;
+use crate::http_routes::utils::User;
 
 
 #[derive(FromForm)]
@@ -46,6 +46,14 @@ impl<'a, 'r> FromRequest<'a, 'r> for User {
 
         rocket::Outcome::Success(u)
     }
+}
+
+
+pub fn get_routes() -> Vec<rocket::Route> {
+    routes![
+        get,
+        post,
+    ]
 }
 
 

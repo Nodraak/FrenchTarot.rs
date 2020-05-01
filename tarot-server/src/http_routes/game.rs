@@ -10,7 +10,7 @@ use tarot_lib::game::game::Game as GameObj;
 
 use crate::db::models;
 use crate::db::utils::DbConn;
-use crate::routes::utils::User;
+use crate::http_routes::utils::User;
 
 
 #[derive(FromForm)]
@@ -33,6 +33,16 @@ impl FromFormValue<'_> for GameCreateForm {
             Err("Players must be 2 <= and <= 5")
         }
     }
+}
+
+
+pub fn get_routes() -> Vec<rocket::Route> {
+    routes![
+        index,
+        create_get,
+        create_post,
+        play,
+    ]
 }
 
 
