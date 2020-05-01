@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
 
 use reqwest;
@@ -58,14 +59,15 @@ impl Handler for Connection {
             .unwrap();
         let player: Player = serde_json::from_str(&payload).unwrap();
 
-        // register this new game
-
-        let mut server_data = self.server_data.lock().unwrap();
+        // set self data
 
         self.game_uuid = Some(game_uuid);
         self.player_username = Some(player.username.clone());
 
         // set game data if not already set
+
+        let mut server_data = self.server_data.lock().unwrap();
+
         if server_data.contains_key(&game_uuid) == false {
             let payload = reqwest::blocking::get(&format!("http://{}/api/game/get/{}", conf::HTTP_API_ADDR, game_uuid))
                 .unwrap()
@@ -79,6 +81,8 @@ impl Handler for Connection {
             });
         }
 
+        // add self.socket to game, if not already set
+
         let game_data = server_data.get_mut(&game_uuid).unwrap();
 
         let is_already_a_player = game_data.sockets.contains(&self.ws);
@@ -89,12 +93,13 @@ impl Handler for Connection {
 
         // send game data
 
-        let msg_game = Message::Text(serde_json::to_string(
-            &events::Event::Game(events_data::GameData {
-                game: game_data.game.clone(),
-            })
-        ).unwrap());
-        self.ws.send(msg_game);
+        self.ws.send(
+            Message::Text(serde_json::to_string(
+                &events::Event::Game(events_data::GameData {
+                    game: game_data.game.clone(),
+                })
+            ).unwrap()),
+        );
 
         // broadcast connection to all, including self
 
@@ -103,16 +108,38 @@ impl Handler for Connection {
                 username: player.username.clone(),
             })
         ).unwrap());
-        let msg_join = Message::Text(serde_json::to_string(
-            &events::Event::GameJoin(events_data::WsConnectData {
-                username: player.username.clone(),
-            })
-        ).unwrap());
 
         for socket in &game_data.sockets {
             socket.send(msg_connect.clone());
+        }
 
-            if is_already_a_player == false {
+        // autojoin game if: not a player yet and free slot available
+
+        if (
+            (is_already_a_player == false)
+            && (game_data.game.players.len() < game_data.game.max_players_count.try_into().unwrap())
+        ) {
+
+            // update local game
+
+            game_data.game.players.push(player.clone());
+
+            // update db game
+
+            reqwest::blocking::Client::new().post(&format!("http://{}/api/game/update/", conf::HTTP_API_ADDR))
+                .json(&game_data.game)
+                .send()
+                .unwrap();
+
+            // send msg
+
+            let msg_join = Message::Text(serde_json::to_string(
+                &events::Event::GameJoin(events_data::WsConnectData {
+                    username: player.username.clone(),
+                })
+            ).unwrap());
+
+            for socket in &game_data.sockets {
                 socket.send(msg_join.clone());
             }
         }

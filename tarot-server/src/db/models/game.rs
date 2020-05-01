@@ -103,6 +103,61 @@ pub fn get(conn: &SqliteConnection, uuid: uuid::Uuid) -> GameObj {
     g
 }
 
+pub fn update(conn: &SqliteConnection, uuid: uuid::Uuid, game_obj: GameObj) {
+
+    diesel::update(games::table).set(
+        GameData {
+            uuid: game_obj.uuid.to_string(),
+            max_players_count: game_obj.max_players_count,
+            creator_uuid: Some(game_obj.creator_uuid.to_string()),
+        }
+    );
+
+    // update players
+
+    let results = game_players::dsl::game_players
+        .filter(game_players::dsl::game_uuid.eq(game_obj.uuid.to_string()))
+        .load::<GamePlayersData>(conn)
+        .expect("Error loading GamePlayers");
+
+    /*
+    TODO delete old gp
+
+    for gp in results {
+        if game_obj.players.contains(PlayerObj {
+            uuid: uuid::Uuid::parse_str(&gp.uuid).unwrap(),
+            username: gp.username,
+        }) == false {
+            diesel::delete(
+                    game_players::dsl::game_players.filter(game_players::dsl::uuid.eq(gp.uuid))
+                )
+                .execute(&conn)
+                .expect("Error deleting gp");
+        }
+    }
+    */
+
+    for p in game_obj.players {
+        if (
+            game_players::dsl::game_players
+                .filter(game_players::dsl::game_uuid.eq(game_obj.uuid.to_string()))
+                .filter(game_players::dsl::user_uuid.eq(p.uuid.to_string()))
+                .count()
+                .get_result::<i64>(conn)
+                .unwrap() == 0
+        ) {
+            diesel::insert_into(game_players::table)
+                .values(GamePlayersData {
+                    uuid: uuid::Uuid::new_v4().to_string(),
+                    user_uuid: Some(p.uuid.to_string()),
+                    game_uuid: Some(game_obj.uuid.to_string()),
+                })
+                .execute(conn)
+                .expect("Error saving new game player");
+        }
+    }
+}
+
 pub fn list(conn: &SqliteConnection) -> Vec<GameObj> {
 
     // TODO paginate
