@@ -27,7 +27,7 @@ struct Connection {
     // connection-specific data
     ws: Sender,
     game_uuid: Option<Uuid>,
-    // TODO player_uuid?
+    player_username: Option<String>,
 }
 
 
@@ -63,6 +63,7 @@ impl Handler for Connection {
         let mut server_data = self.server_data.lock().unwrap();
 
         self.game_uuid = Some(game_uuid);
+        self.player_username = Some(player.username.clone());
 
         // set game data if not already set
         if server_data.contains_key(&game_uuid) == false {
@@ -131,7 +132,7 @@ impl Handler for Connection {
         // broadcast connection close to other players
         for socket in &game_data.sockets {
             let event = events::Event::WsDisconnect(events_data::WsConnectData {
-                username: "todo_username_from_server".to_string(),
+                username: self.player_username.as_ref().unwrap().clone(),
             });
             let msg = Message::Text(serde_json::to_string(&event).unwrap());
             socket.send(msg);
@@ -161,6 +162,7 @@ impl Handler for Connection {
         // try updating the game
 
         let ret = game_data.game.update(&deserialized);
+        // TODO update server data -> if GameJoin, update GameData struct and post in db new player
 
         // send status ok/fail
 
@@ -196,5 +198,6 @@ pub fn main() {
         server_data: Arc::clone(&server_data),
         ws: ws,
         game_uuid: None,
+        player_username: None,
     }}).unwrap();
 }
