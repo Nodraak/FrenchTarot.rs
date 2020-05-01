@@ -76,10 +76,9 @@ impl Handler for Connection {
             });
         }
 
-        // set self data
-
         let game_data = server_data.get_mut(&game_uuid).unwrap();
-        let is_already_a_player = game_data.game.players.contains(&player);
+
+        // set self data
 
         self.game_uuid = Some(game_uuid);
         self.player_username = Some(player.username.clone());
@@ -95,7 +94,7 @@ impl Handler for Connection {
             ).unwrap()),
         );
 
-        // broadcast connection to all, including self
+        // broadcast WsConnect to all, including self
 
         let msg_connect = Message::Text(serde_json::to_string(
             &events::Event::WsConnect(events_data::WsConnectData {
@@ -109,11 +108,12 @@ impl Handler for Connection {
 
         // autojoin game if: not a player yet and free slot available
 
+        let is_already_a_player = game_data.game.players.contains(&player);
+
         if (
             (is_already_a_player == false)
             && (game_data.game.players.len() < game_data.game.max_players_count.try_into().unwrap())
         ) {
-
             // update local game
 
             game_data.game.players.push(player.clone());
@@ -136,6 +136,8 @@ impl Handler for Connection {
             for socket in &game_data.sockets {
                 socket.send(msg_join.clone());
             }
+
+            // TODO autostart game
         }
 
         Ok(())
@@ -204,6 +206,8 @@ impl Handler for Connection {
                 panic!(val); // TODO better error handling
             },
         }
+
+        // return
 
         Ok(())
     }
