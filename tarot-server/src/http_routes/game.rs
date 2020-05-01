@@ -1,10 +1,11 @@
 use std::collections::HashMap;
-use uuid::Uuid;
 
 use rocket::http::RawStr;
 use rocket::request::{Form, FromFormValue};
 use rocket::response::Redirect;
 use rocket_contrib::templates::Template;
+use serde::Serialize;
+use uuid::Uuid;
 
 use tarot_lib::game::game::Game as GameObj;
 
@@ -48,9 +49,20 @@ pub fn get_routes() -> Vec<rocket::Route> {
 
 #[get("/")]
 pub fn index(user: User, conn: DbConn) -> Template {
-    let mut context = HashMap::<&str, Vec<GameObj>>::new();
-    context.insert("games", models::game::list(&conn));
-    Template::render("game/index", &context)
+
+    #[derive(Serialize)]
+    struct Context {
+        games: Vec<GameObj>,
+        current_players_count: usize,
+    }
+
+    let games = models::game::list(&conn);
+    let c = games.len();
+
+    Template::render("game/index", Context {
+        games: games,
+        current_players_count: c,
+    })
 }
 
 #[get("/create")]

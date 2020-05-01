@@ -37,6 +37,8 @@ impl Handler for Connection {
     fn on_open(&mut self, handshake: Handshake) -> Result<()> {
         println!("on_open(): {:?}", handshake);
 
+        let mut server_data = self.server_data.lock().unwrap();
+
         // parse url
 
         let path = handshake.request.resource();
@@ -59,14 +61,7 @@ impl Handler for Connection {
             .unwrap();
         let player: Player = serde_json::from_str(&payload).unwrap();
 
-        // set self data
-
-        self.game_uuid = Some(game_uuid);
-        self.player_username = Some(player.username.clone());
-
         // set game data if not already set
-
-        let mut server_data = self.server_data.lock().unwrap();
 
         if server_data.contains_key(&game_uuid) == false {
             let payload = reqwest::blocking::get(&format!("http://{}/api/game/get/{}", conf::HTTP_API_ADDR, game_uuid))
@@ -81,15 +76,14 @@ impl Handler for Connection {
             });
         }
 
-        // add self.socket to game, if not already set
+        // set self data
 
         let game_data = server_data.get_mut(&game_uuid).unwrap();
+        let is_already_a_player = game_data.game.players.contains(&player);
 
-        let is_already_a_player = game_data.sockets.contains(&self.ws);
-
-        if is_already_a_player == false {
-            game_data.sockets.push(self.ws.clone());
-        }
+        self.game_uuid = Some(game_uuid);
+        self.player_username = Some(player.username.clone());
+        game_data.sockets.push(self.ws.clone());
 
         // send game data
 
@@ -126,7 +120,7 @@ impl Handler for Connection {
 
             // update db game
 
-            reqwest::blocking::Client::new().post(&format!("http://{}/api/game/update/", conf::HTTP_API_ADDR))
+            reqwest::blocking::Client::new().post(&format!("http://{}/api/game/update", conf::HTTP_API_ADDR))
                 .json(&game_data.game)
                 .send()
                 .unwrap();
@@ -189,7 +183,6 @@ impl Handler for Connection {
         // try updating the game
 
         let ret = game_data.game.update(&deserialized);
-        // TODO update server data -> if GameJoin, update GameData struct and post in db new player
 
         // send status ok/fail
 

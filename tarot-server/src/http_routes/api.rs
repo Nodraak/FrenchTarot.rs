@@ -36,6 +36,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for Internal {
 pub fn get_routes() -> Vec<rocket::Route> {
     routes![
         game_get,
+        game_update,
         player_get,
     ]
 }
