@@ -6,7 +6,7 @@ use rocket::response::Redirect;
 use rocket_contrib::templates::Template;
 use uuid::Uuid;
 
-use crate::db::accessors::users;
+use crate::db::models::user;
 use crate::db::utils::DbConn;
 use crate::routes::utils::User;
 
@@ -26,7 +26,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for User {
         let u: User = match cookie {
             // existing user
             Some(c) => {
-                users::get(&conn, Uuid::parse_str(&c.value().to_string()).unwrap())
+                user::get(&conn, Uuid::parse_str(&c.value().to_string()).unwrap())
             }
             // new user
             None => {
@@ -37,7 +37,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for User {
                     username: username,
                 };
 
-                users::create(&conn, &u);
+                user::create(&conn, &u);
                 request.cookies().add_private(Cookie::new("uuid", u.uuid.to_string()));
 
                 u
@@ -58,7 +58,7 @@ pub fn get(user: User) -> Template {
 
 #[post("/", data = "<user_data>")]
 pub fn post(user_session: User, user_data: Form<UserCreateForm>, conn: DbConn) -> Result<Redirect, String> {
-    users::update(&conn, user_session.uuid, User {
+    user::update(&conn, user_session.uuid, User {
         uuid: user_session.uuid,
         username: user_data.username.clone(),
     });

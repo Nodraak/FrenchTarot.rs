@@ -6,7 +6,7 @@ use uuid::Uuid;
 use tarot_lib::game::game::Game as GameObj;
 use tarot_lib::player::Player as PlayerObj;
 
-use crate::db::accessors;
+use crate::db::models;
 use crate::db::utils::DbConn;
 
 
@@ -34,13 +34,13 @@ impl<'a, 'r> FromRequest<'a, 'r> for Internal {
 
 #[get("/game/get/<uuid>")]
 pub fn game_get(uuid: String, conn: DbConn, _i: Internal) -> Json<GameObj> {
-    let g = accessors::game::get(&conn, Uuid::parse_str(&uuid).unwrap());
+    let g = models::game::get(&conn, Uuid::parse_str(&uuid).unwrap());
     Json(g)
 }
 
 #[get("/player/get/<uuid>")]
 pub fn player_get(uuid: String, conn: DbConn, _i: Internal) -> Json<PlayerObj> {
-    let u = accessors::users::get(&conn, Uuid::parse_str(&uuid).unwrap());
+    let u = models::user::get(&conn, Uuid::parse_str(&uuid).unwrap());
     Json(PlayerObj {
         uuid: u.uuid,
         username: u.username,

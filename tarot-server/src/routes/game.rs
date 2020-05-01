@@ -8,7 +8,7 @@ use rocket_contrib::templates::Template;
 
 use tarot_lib::game::game::Game as GameObj;
 
-use crate::db::accessors;
+use crate::db::models;
 use crate::db::utils::DbConn;
 use crate::routes::utils::User;
 
@@ -39,7 +39,7 @@ impl FromFormValue<'_> for GameCreateForm {
 #[get("/")]
 pub fn index(user: User, conn: DbConn) -> Template {
     let mut context = HashMap::<&str, Vec<GameObj>>::new();
-    context.insert("games", accessors::game::list(&conn));
+    context.insert("games", models::game::list(&conn));
     Template::render("game/index", &context)
 }
 
@@ -53,7 +53,7 @@ pub fn create_get(user: User) -> Template {
 pub fn create_post(game: Form<GameCreateForm>, user: User, conn: DbConn) -> Result<Redirect, String> {
     let game_uuid = Uuid::new_v4();
 
-    accessors::game::create(&conn, GameObj {
+    models::game::create(&conn, GameObj {
         uuid: game_uuid,
         max_players_count: game.max_players_count,
         creator_uuid: user.uuid,
