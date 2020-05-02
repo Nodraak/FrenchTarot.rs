@@ -10,3 +10,6 @@ build:
 
 run:
 	make -C tarot-server/ run
+
+test:
+	make -C tarot-lib/ test
