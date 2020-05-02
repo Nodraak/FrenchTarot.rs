@@ -1,5 +1,5 @@
 extern crate rand;
-use crate::card::rand::Rng;
+use rand::seq::SliceRandom;
 
 /// the Card interface
 pub trait Card{
@@ -319,46 +319,50 @@ impl Deck
     /// assert_eq!(table.deck_player1.cards.len(), 18);
     /// assert_eq!(table.deck_player5.cards.len(), 0);
     /// assert_eq!(table.deck_chien.cards.len(), 6);
+    /// let deck2 = Deck::new();
+    /// let table2 = deck2.distribute_to_players(5);
+    /// assert_eq!(table2.deck_player1.cards.len(), 15);
+    /// assert_eq!(table2.deck_player5.cards.len(), 15);
+    /// assert_eq!(table2.deck_chien.cards.len(), 3);
     /// ```
     pub fn distribute_to_players(self, nb_players: u8) -> Table {
         let mut copy_of_deck = self.cards;
         let mut table: Table = Table::new();
 
-        let mut taille_du_chien = 6;
-        let mut taille_dun_jeu = 18;
-        //determination de la taille du chien
+        let mut playerdeck_size = 18;
+        // determination of cards in a player deck
         if nb_players == 4 {
-            taille_du_chien = 6;
-            taille_dun_jeu = 18;
+            playerdeck_size = 18;
         } else if nb_players == 5 {
-            taille_du_chien = 3;
-            taille_dun_jeu = 16;
+            playerdeck_size = 15;
         }
+        // Shuffle deck
+        let mut rng = rand::thread_rng();
+        copy_of_deck.shuffle(&mut rng);
 
-        //tant qu'il y a des cartes a distribuer on en pioche une a distribuer
-        while let Some(card) = copy_of_deck.pop() {
-            //on distribue aleatoirement aux decks tant qu'ils ne sont pas pleins
-            let mut rng = rand::thread_rng();
-            let random = rng.gen_range(0, nb_players+1);
-
-            if random == 1 && table.deck_player1.cards.len() < taille_dun_jeu {
-                table.deck_player1.add_card(card);
-            } else if random == 2 && table.deck_player2.cards.len() < taille_dun_jeu {
-                table.deck_player2.add_card(card);
-            } else if random == 3 && table.deck_player3.cards.len() < taille_dun_jeu {
-                table.deck_player3.add_card(card);
-            } else if random == 4 && table.deck_player4.cards.len() < taille_dun_jeu {
-                table.deck_player4.add_card(card);
-            } else if random == 5 && table.deck_player5.cards.len() < taille_dun_jeu && nb_players == 5 {
-                table.deck_player5.add_card(card);
-            } else if random == 0 && table.deck_chien.cards.len() < taille_du_chien {
-                table.deck_chien.add_card(card);
+        // Distribute the suffled deck
+        for current_card in copy_of_deck {
+            if table.deck_player1.cards.len() < playerdeck_size {
+                table.deck_player1.add_card(current_card);
+                println!("Donné au player1");
+            } else if table.deck_player2.cards.len() < playerdeck_size {
+                table.deck_player2.add_card(current_card);
+                println!("Donné au player2");
+            } else if table.deck_player3.cards.len() < playerdeck_size {
+                table.deck_player3.add_card(current_card);
+                println!("Donné au player3");
+            } else if table.deck_player4.cards.len() < playerdeck_size {
+                table.deck_player4.add_card(current_card);
+                println!("Donné au player4");
+            } else if table.deck_player5.cards.len() < playerdeck_size && nb_players == 5 {
+                table.deck_player5.add_card(current_card);
+                println!("Donné au player5");
             } else {
-                //TODO ameliorer le systeme de distribution
-                //le joueur/chien designe ne peut pas recevoir cette carte, on la remet dans le deck
-                copy_of_deck.push(card);
+                table.deck_chien.add_card(current_card);
+                println!("Donné au chien");
             }
         }
+
         table
     }
 
