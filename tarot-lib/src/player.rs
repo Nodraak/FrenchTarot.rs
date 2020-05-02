@@ -7,11 +7,13 @@
         // deck: vec<card>[]
         // heap: vec<card>[] -> cards won
 
-use uuid::Uuid;
+use std::cmp::PartialEq;
 
 use serde::{Serialize, Deserialize};
+use uuid::Uuid;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq)]
+#[derive(Serialize, Deserialize)]
 pub struct Player {
     pub uuid: Uuid,
     pub username: String,

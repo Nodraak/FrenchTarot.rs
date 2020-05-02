@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::convert::TryInto;
 use std::sync::{Arc, Mutex};
 
 use reqwest;
@@ -36,6 +37,8 @@ impl Handler for Connection {
     fn on_open(&mut self, handshake: Handshake) -> Result<()> {
         println!("on_open(): {:?}", handshake);
 
+        let mut server_data = self.server_data.lock().unwrap();
+
         // parse url
 
         let path = handshake.request.resource();
@@ -58,14 +61,8 @@ impl Handler for Connection {
             .unwrap();
         let player: Player = serde_json::from_str(&payload).unwrap();
 
-        // register this new game
-
-        let mut server_data = self.server_data.lock().unwrap();
-
-        self.game_uuid = Some(game_uuid);
-        self.player_username = Some(player.username.clone());
-
         // set game data if not already set
+
         if server_data.contains_key(&game_uuid) == false {
             let payload = reqwest::blocking::get(&format!("http://{}/api/game/get/{}", conf::HTTP_API_ADDR, game_uuid))
                 .unwrap()
@@ -81,40 +78,66 @@ impl Handler for Connection {
 
         let game_data = server_data.get_mut(&game_uuid).unwrap();
 
-        let is_already_a_player = game_data.sockets.contains(&self.ws);
+        // set self data
 
-        if is_already_a_player == false {
-            game_data.sockets.push(self.ws.clone());
-        }
+        self.game_uuid = Some(game_uuid);
+        self.player_username = Some(player.username.clone());
+        game_data.sockets.push(self.ws.clone());
 
         // send game data
 
-        let msg_game = Message::Text(serde_json::to_string(
-            &events::Event::Game(events_data::GameData {
-                game: game_data.game.clone(),
-            })
-        ).unwrap());
-        self.ws.send(msg_game);
+        self.ws.send(
+            Message::Text(serde_json::to_string(
+                &events::Event::Game(events_data::GameData {
+                    game: game_data.game.clone(),
+                })
+            ).unwrap()),
+        );
 
-        // broadcast connection to all, including self
+        // broadcast WsConnect to all, including self
 
         let msg_connect = Message::Text(serde_json::to_string(
             &events::Event::WsConnect(events_data::WsConnectData {
                 username: player.username.clone(),
             })
         ).unwrap());
-        let msg_join = Message::Text(serde_json::to_string(
-            &events::Event::GameJoin(events_data::WsConnectData {
-                username: player.username.clone(),
-            })
-        ).unwrap());
 
         for socket in &game_data.sockets {
             socket.send(msg_connect.clone());
+        }
 
-            if is_already_a_player == false {
+        // autojoin game if: not a player yet and free slot available
+
+        let is_already_a_player = game_data.game.players.contains(&player);
+
+        if (
+            (is_already_a_player == false)
+            && (game_data.game.players.len() < game_data.game.max_players_count.try_into().unwrap())
+        ) {
+            // update local game
+
+            game_data.game.players.push(player.clone());
+
+            // update db game
+
+            reqwest::blocking::Client::new().post(&format!("http://{}/api/game/update", conf::HTTP_API_ADDR))
+                .json(&game_data.game)
+                .send()
+                .unwrap();
+
+            // send msg
+
+            let msg_join = Message::Text(serde_json::to_string(
+                &events::Event::GameJoin(events_data::WsConnectData {
+                    username: player.username.clone(),
+                })
+            ).unwrap());
+
+            for socket in &game_data.sockets {
                 socket.send(msg_join.clone());
             }
+
+            // TODO autostart game
         }
 
         Ok(())
@@ -162,7 +185,6 @@ impl Handler for Connection {
         // try updating the game
 
         let ret = game_data.game.update(&deserialized);
-        // TODO update server data -> if GameJoin, update GameData struct and post in db new player
 
         // send status ok/fail
 
@@ -184,6 +206,8 @@ impl Handler for Connection {
                 panic!(val); // TODO better error handling
             },
         }
+
+        // return
 
         Ok(())
     }

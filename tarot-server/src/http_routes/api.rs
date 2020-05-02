@@ -36,6 +36,7 @@ impl<'a, 'r> FromRequest<'a, 'r> for Internal {
 pub fn get_routes() -> Vec<rocket::Route> {
     routes![
         game_get,
+        game_update,
         player_get,
     ]
 }
@@ -46,6 +47,14 @@ pub fn game_get(uuid: String, conn: DbConn, _i: Internal) -> Json<GameObj> {
     let g = models::game::get(&conn, Uuid::parse_str(&uuid).unwrap());
     Json(g)
 }
+
+
+#[post("/game/update", data = "<game>")]
+pub fn game_update(game: Json<GameObj>, conn: DbConn, _i: Internal) {
+    let g: GameObj = game.into_inner();
+    models::game::update(&conn, g.uuid, g);
+}
+
 
 #[get("/player/get/<uuid>")]
 pub fn player_get(uuid: String, conn: DbConn, _i: Internal) -> Json<PlayerObj> {

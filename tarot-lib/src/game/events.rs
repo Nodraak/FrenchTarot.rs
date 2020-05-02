@@ -15,7 +15,7 @@ pub enum Event {
 /*
     GameQuit, // reason: rage_quit
 
-    GameStart,  // TODO: reason: Complete / Majority / Master
+    //GameStart,  // TODO: reason: Complete / Majority / Master
 
     // TODO: deal cards manually?
     DealResult(DealResultData),
@@ -23,8 +23,8 @@ pub enum Event {
     BidAnnounce,
     BidResult,
 
-    DogMade,
     KingCalled {c: Color},
+    DogResult,
 
     PlayCard {c: Card},
 */
