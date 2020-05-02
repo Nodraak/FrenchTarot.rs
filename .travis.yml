@@ -12,3 +12,4 @@ install:
 script:
   - make build
   - make test
+  - make doc
