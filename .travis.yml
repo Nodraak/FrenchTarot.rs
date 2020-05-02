@@ -1,0 +1,15 @@
+language: rust
+
+rust:
+  - nightly
+
+cache: cargo
+
+install:
+  - rm -rf /home/travis/.cargo/bin/wasm-pack
+  - curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+script:
+  - make build
+  - make test
+  - make doc

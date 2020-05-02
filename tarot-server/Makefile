@@ -11,3 +11,9 @@ build:
 run:
 	echo "DATABASE_URL=db.sqlite3" > .env
 	cargo run
+
+test:
+	cargo test
+
+doc:
+	cargo doc
