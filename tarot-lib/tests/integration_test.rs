@@ -27,6 +27,6 @@ fn main() {
         uuid: Uuid::new_v4(),
         max_players_count: 3,
         players: vec![p1, p2, p3],
-        creator: Some(&p4),
+        creator_uuid: p4.uuid,
     };
 }
