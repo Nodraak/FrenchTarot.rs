@@ -14,6 +14,3 @@ run:
 
 test:
 	cargo test
-
-doc:
-	cargo doc

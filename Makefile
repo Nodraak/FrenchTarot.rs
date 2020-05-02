@@ -17,5 +17,5 @@ test:
 	make -C tarot-server/ test
 
 doc:
-	make -C tarot-client/ doc
-	make -C tarot-server/ doc
+	cd tarot-client/ && cargo doc --no-deps --all-features --document-private-items --target-dir ../target/
+	cd tarot-server/ && cargo doc --no-deps --all-features --document-private-items --target-dir ../target/
