@@ -53,15 +53,12 @@ pub fn index(user: User, conn: DbConn) -> Template {
     #[derive(Serialize)]
     struct Context {
         games: Vec<GameObj>,
-        current_players_count: usize,
     }
 
     let games = models::game::list(&conn);
-    let c = games.len();
 
     Template::render("game/index", Context {
         games: games,
-        current_players_count: c,
     })
 }
 

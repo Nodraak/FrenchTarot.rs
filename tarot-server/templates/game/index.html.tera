@@ -7,7 +7,7 @@
         {% for g in games %}
             <li>
                 {{ g.uuid }}
-                - {{ current_players_count }}/{{ g.max_players_count }} players
+                - {{ g.players | length }}/{{ g.max_players_count }} players
                 - <a href="/game/play/{{ g.uuid }}">Join</a>
             </li>
         {% endfor %}
