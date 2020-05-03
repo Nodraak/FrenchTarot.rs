@@ -11,7 +11,9 @@ pub fn init(document: &web_sys::Document, game_uuid: Uuid) -> utils::Result<()> 
             </div>
             <div id="info">
                 <div id="game">
-                    <p>Game id: <a href="/game/play/{}">{}</a></p>
+                    <ul>
+                        <li>Id: <a href="/game/play/{}">{}</a></li>
+                    </ul>
                 </div>
                 <div id="events">
                     <p>Connecting...</p>

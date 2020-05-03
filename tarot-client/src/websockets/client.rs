@@ -9,6 +9,7 @@ use tarot_lib::game::events::Event;
 use tarot_lib::game::game::Game;
 
 use crate::js_api::log;
+use crate::ui::info;
 use crate::websockets::handler_ui;
 
 
@@ -26,11 +27,11 @@ fn on_open(_v: JsValue) {
 }
 
 fn on_close(_error: ErrorEvent) {
-    handler_ui::events_append_str("Disconnected from server");
+    info::events_append_str("Disconnected from server");
 }
 
 fn on_error(_error: ErrorEvent) {
-    handler_ui::events_append_str("Connection error. Try refreshing the page. Guru meditation: on_error()");
+    info::events_append_str("Connection error. Try refreshing the page. Guru meditation: on_error()");
 }
 
 fn on_message(game_data_: Arc<Mutex<GameData>>, msg: MessageEvent) {
@@ -38,7 +39,7 @@ fn on_message(game_data_: Arc<Mutex<GameData>>, msg: MessageEvent) {
 
     let payload = match msg.data().as_string() {
         None => {
-            handler_ui::events_append_str("Connection error. Try refreshing the page. Guru meditation: on_message() read payload");
+            info::events_append_str("Connection error. Try refreshing the page. Guru meditation: on_message() read payload");
             return;
         },
         Some(payload) => {
@@ -48,7 +49,7 @@ fn on_message(game_data_: Arc<Mutex<GameData>>, msg: MessageEvent) {
 
     let event: Event = match serde_json::from_str(&payload) {
         Err(_) => {
-            handler_ui::events_append_str("Connection error. Try refreshing the page. Guru meditation: on_message() deserialization");
+            info::events_append_str("Connection error. Try refreshing the page. Guru meditation: on_message() deserialization");
             return;
         },
         Ok(event) => {
@@ -69,7 +70,7 @@ fn on_message(game_data_: Arc<Mutex<GameData>>, msg: MessageEvent) {
         },
     };
     if let Err(_) = ret {
-        handler_ui::events_append_str("Connection error. Try refreshing the page. Guru meditation: on_message() update game");
+        info::events_append_str("Connection error. Try refreshing the page. Guru meditation: on_message() update game");
         return;
     }
 
