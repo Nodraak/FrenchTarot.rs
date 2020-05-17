@@ -29,6 +29,8 @@ fn main() {
         username: p2.username.clone(),
     }));
 
+    assert_eq!(game.players_data.len(), 2);
+
     /*
 
     let p3 = Player {

@@ -23,13 +23,13 @@ use crate::player::Player;
 // public data (shared among every player as it is)
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GameState {
-    max_players: i8,                            // used to auto start game
-    players_data: Vec<(Uuid, PlayerState)>,     // by seating order, counter-clockwise
-    state: State,
+    pub max_players: i8,                            // used to auto start game
+    pub players_data: Vec<(Uuid, PlayerState)>,     // by seating order, counter-clockwise
+    pub state: State,
 
-    active_player: Option<Uuid>,                // who are we waiting for, if any
+    pub active_player: Option<Uuid>,                // who are we waiting for, if any
     // TODO leader?
-    king: Option<CardSuit>,
+    pub king: Option<CardSuit>,
 }
 
 //
@@ -38,12 +38,12 @@ pub struct GameState {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PlayerState {
-    uuid: Uuid,
-    username: String,
+    pub uuid: Uuid,
+    pub username: String,
 
-    hand: Option<CardsPile>,
-    dog: Option<CardsPile>,
-    scoring_pile: Option<CardsPile>,
+    pub hand: Option<CardsPile>,
+    pub dog: Option<CardsPile>,
+    pub scoring_pile: Option<CardsPile>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
