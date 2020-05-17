@@ -17,45 +17,34 @@ use crate::player::Player;
 
 
 //
-// Client and Server data
+// Game data
 //
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ClientGameState {
-    pub game_data: GameState,
-    pub player_data: PlayerState,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ServerGameState {
-    pub game_data: GameState,
-    pub players_data: Vec<(Uuid, PlayerState)>,
-}
 
 // public data (shared among every player as it is)
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct GameState {
     max_players: i8,                            // used to auto start game
-    players_username: Vec<(Uuid, String)>,      // by seating order, counter-clockwise
+    players_data: Vec<(Uuid, PlayerState)>,     // by seating order, counter-clockwise
     state: State,
-    active_player: Option<Uuid>,                // who are we waiting for, if any
 
+    active_player: Option<Uuid>,                // who are we waiting for, if any
     // TODO leader?
     king: Option<CardSuit>,
 }
 
-// private data (player specific, details are hidden to non owner)
+//
+// Helpers
+//
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PlayerState {
-    player_uuid: Uuid,
+    uuid: Uuid,
+    username: String,
+
     hand: Option<CardsPile>,
     dog: Option<CardsPile>,
     scoring_pile: Option<CardsPile>,
 }
-
-//
-// Enum helpers
-//
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum State {
@@ -82,8 +71,8 @@ impl GameState {
     pub fn new(max_players: i8, creator: &Player) -> Self {
         GameState {
             max_players: max_players,
-            players_username: vec![
-                (creator.uuid, creator.username.clone()),
+            players_data: vec![
+                (creator.uuid, PlayerState::new(creator)),
             ],
             state: State::WaitingPlayers,
 
@@ -102,7 +91,8 @@ impl GameState {
 impl PlayerState {
     pub fn new(player: &Player) -> Self {
         PlayerState {
-            player_uuid: player.uuid,
+            uuid: player.uuid,
+            username: player.username.clone(),
 
             // game is not started yet
             hand: None,

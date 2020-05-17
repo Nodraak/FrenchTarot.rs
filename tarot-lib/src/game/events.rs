@@ -55,7 +55,7 @@ pub struct WsConnectPayload {
     username: String,
 }
 
-pub type GamePayload = game::ClientGameState;
+pub type GamePayload = game::GameState;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DealResultPayload {

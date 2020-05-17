@@ -14,19 +14,19 @@ fn main() {
         username: "p1".to_string(),
     };
 
-    let mut state = game::ServerGameState {
-        game_data: game::GameState::new(3, &p1),
-        players_data: vec![
-            (p1.uuid, game::PlayerState::new(&p1)),
-        ],
-    };
+    let mut state = game::GameState::new(3, &p1);
 
-    /*
+    // p2 joins
 
     let p2 = Player {
         uuid: Uuid::new_v4(),
         username: "p2".to_string(),
     };
+
+
+
+    /*
+
     let p3 = Player {
         uuid: Uuid::new_v4(),
         username: "p3".to_string(),
