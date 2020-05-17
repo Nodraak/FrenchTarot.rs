@@ -85,7 +85,13 @@ impl GameState {
     pub fn update(&mut self, event: &Event) -> Result<(), String> {
         match event {
             Event::GameJoin(payload) => {
-                println!("GameJoin {:?}", payload);
+                // TODO check self.max_players
+                self.players_data.push(
+                    (payload.uuid, PlayerState::new(&Player {
+                        uuid: payload.uuid,
+                        username: payload.username.clone(),
+                    }))
+                );
             },
             _ =>  {
                 print!("Unhandled event {:?}", event);

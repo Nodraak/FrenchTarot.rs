@@ -31,23 +31,18 @@ fn main() {
 
     assert_eq!(game.players_data.len(), 2);
 
-    /*
+    // p3 joins and game starts
 
     let p3 = Player {
         uuid: Uuid::new_v4(),
         username: "p3".to_string(),
     };
-    let p4 = Player {
-        uuid: Uuid::new_v4(),
-        username: "p4".to_string(),
-    };
 
-    let g = Game {
-        uuid: Uuid::new_v4(),
-        max_players_count: 3,
-        players: vec![p1, p2, p3],
-        creator_uuid: p4.uuid,
-    };
+    game.update(&events::Event::GameJoin(events::WsConnectPayload {
+        uuid: p3.uuid,
+        username: p3.username.clone(),
+    }));
 
-    */
+    assert_eq!(game.players_data.len(), 3);
+    // TODO assert state changed
 }
