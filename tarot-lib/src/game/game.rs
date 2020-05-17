@@ -83,6 +83,14 @@ impl GameState {
     }
 
     pub fn update(&mut self, event: &Event) -> Result<(), String> {
+        match event {
+            Event::GameJoin(payload) => {
+                println!("GameJoin {:?}", payload);
+            },
+            _ =>  {
+                print!("Unhandled event {:?}", event);
+            },
+        }
 
         Ok(())
     }

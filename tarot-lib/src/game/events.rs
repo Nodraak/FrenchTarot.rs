@@ -51,36 +51,36 @@ Might implement later:
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct WsConnectPayload {
-    uuid: Uuid,
-    username: String,
+    pub uuid: Uuid,
+    pub username: String,
 }
 
 pub type GamePayload = game::GameState;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DealResultPayload {
-    hand: Vec<Card>,
-    dog: Vec<Card>,
+    pub hand: Vec<Card>,
+    pub dog: Vec<Card>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BidAnnouncePayload {
-    player: Uuid,
+    pub player: Uuid,
     // TODO enum bid: petite, garde, ...
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct KingCalledPayload {
-    suit: CardSuit,
+    pub suit: CardSuit,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DogResultPayload {
-    dog: Option<Vec<Card>>,
+    pub dog: Option<Vec<Card>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PlayCardPayload {
-    player: Uuid,
-    card: Card,
+    pub player: Uuid,
+    pub card: Card,
 }

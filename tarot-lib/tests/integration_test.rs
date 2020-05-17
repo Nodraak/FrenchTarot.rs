@@ -1,6 +1,7 @@
 use uuid::Uuid;
 
 use tarot_lib::game::game;
+use tarot_lib::game::events;
 use tarot_lib::player::Player;
 
 
@@ -14,7 +15,7 @@ fn main() {
         username: "p1".to_string(),
     };
 
-    let mut state = game::GameState::new(3, &p1);
+    let mut game = game::GameState::new(3, &p1);
 
     // p2 joins
 
@@ -23,7 +24,10 @@ fn main() {
         username: "p2".to_string(),
     };
 
-
+    game.update(&events::Event::GameJoin(events::WsConnectPayload {
+        uuid: p2.uuid,
+        username: p2.username.clone(),
+    }));
 
     /*
 
