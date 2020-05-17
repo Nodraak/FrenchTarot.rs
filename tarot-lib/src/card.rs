@@ -21,6 +21,16 @@ pub enum Card {
     // TODO
 }
 
+#[derive(Clone, Debug)]
+#[derive(Serialize, Deserialize)]
+pub enum CardSuit {
+    S1,
+    S2,
+    S3,
+    S4,
+    // TOOD
+}
+
 pub type Hand = Vec<Card>;
 pub type Dog = Vec<Card>;
 pub type Deck = Vec<Card>;

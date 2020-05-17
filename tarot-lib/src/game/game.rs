@@ -11,24 +11,73 @@
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
 
+use crate::card::{Card, CardSuit};
 use crate::game::events::Event;
-use crate::player::Player;
 
+
+//
+// Client and Server data
+//
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Game {
-    // TODO: have a hasmap player_uuid->Player, and a creator_uuid
-
-    pub uuid: Uuid,
-    pub max_players_count: i32,
-    pub players: Vec<Player>,
-    pub creator_uuid: Uuid,
-
-//    pub phase: GamePhase,
+pub struct ClientGameState {
+    game_data: GameState,
+    player_data: PlayerState,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ServerGameState {
+    game_data: GameState,
+    players_data: Vec<(Uuid, PlayerState)>,
+}
 
-impl Game {
+// public data (shared among every player as it is)
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct GameState {
+    max_players: i8,                            // used to auto start game
+    players_username: Vec<(Uuid, String)>,      // by seating order, counter-clockwise
+    state: State,
+    active_player: Option<Uuid>,                // who are we waiting for, if any
+
+    // TODO leader?
+    king: Option<CardSuit>,
+}
+
+// private data (player specific, details are hidden to non owner)
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct PlayerState {
+    player_uuid: Uuid,
+    hand: Option<CardsPile>,
+    dog: Option<CardsPile>,
+    scoring_pile: Option<CardsPile>,
+}
+
+//
+// Enum helpers
+//
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum State {
+    WaitingPlayers,     // game is created, waiting for players
+    DealingCards,       // automated for now, might be manual later
+    Bidding,            // players talk
+    PreparingKing,      // leader calls the king
+    PreparingDog,       // leader makes the dog
+    Playing,            // main game
+    Finished,           // end of game, showing score
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum CardsPile {
+    Visible(Vec<Card>),     // all cards
+    Hidden(i8),             // only cards count
+}
+
+//
+// Methods
+//
+
+impl GameState {
     pub fn update(&mut self, event: &Event) -> Result<(), String> {
 
         Ok(())
