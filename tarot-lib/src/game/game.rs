@@ -13,6 +13,7 @@ use uuid::Uuid;
 
 use crate::card::{Card, CardSuit};
 use crate::game::events::Event;
+use crate::player::Player;
 
 
 //
@@ -21,14 +22,14 @@ use crate::game::events::Event;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ClientGameState {
-    game_data: GameState,
-    player_data: PlayerState,
+    pub game_data: GameState,
+    pub player_data: PlayerState,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ServerGameState {
-    game_data: GameState,
-    players_data: Vec<(Uuid, PlayerState)>,
+    pub game_data: GameState,
+    pub players_data: Vec<(Uuid, PlayerState)>,
 }
 
 // public data (shared among every player as it is)
@@ -78,8 +79,35 @@ pub enum CardsPile {
 //
 
 impl GameState {
+    pub fn new(max_players: i8, creator: &Player) -> Self {
+        GameState {
+            max_players: max_players,
+            players_username: vec![
+                (creator.uuid, creator.username.clone()),
+            ],
+            state: State::WaitingPlayers,
+
+            // game is not started yet
+            active_player: None,
+            king: None,
+        }
+    }
+
     pub fn update(&mut self, event: &Event) -> Result<(), String> {
 
         Ok(())
+    }
+}
+
+impl PlayerState {
+    pub fn new(player: &Player) -> Self {
+        PlayerState {
+            player_uuid: player.uuid,
+
+            // game is not started yet
+            hand: None,
+            dog: None,
+            scoring_pile: None,
+        }
     }
 }
