@@ -14,7 +14,7 @@ use crate::db::schema::{games, game_players, users};
 use crate::db::utils;
 
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 #[derive(AsChangeset, Insertable, Queryable)]
 #[derive(Serialize)]
 #[table_name="games"]
@@ -25,7 +25,7 @@ pub struct Game {
     pub creator_uuid: Option<utils::Uuid>,  // User.Uuid
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 #[derive(AsChangeset, Insertable, Queryable)]
 #[derive(Serialize)]
 #[table_name="game_players"]
